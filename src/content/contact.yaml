@@ -1,10 +1,11 @@
-email: hello@example.com
+email: new0996142399@gmail.com
 phone: ''
-formEnabled: true
-availability: Open to new projects from next quarter
-ctaHeadline: Got an idea that needs a builder?
+formEnabled: false
+availability: Not looking for a new role, but always happy to talk about AI and data.
+ctaHeadline: Want to talk about AI, data or automation?
 marqueeWords:
-  - Let's build
-  - Something odd
-  - Something fast
-  - Something yours
+  - AI agents
+  - Data pipelines
+  - Automation
+  - Deep learning
+  - Prompt engineering

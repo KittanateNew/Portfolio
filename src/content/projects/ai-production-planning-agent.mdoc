@@ -1,0 +1,22 @@
+---
+title: AI Production Planning Agent
+summary: An AI agent that prepares daily blending and filling plans from SAP data and flags anything a planner needs to check.
+cover: /src/assets/images/projects/ai-production-planning-agent-cover.jpg
+gallery: []
+tech:
+  - AI agents
+  - Claude
+  - SAP
+  - Excel automation
+liveUrl: ''
+repoUrl: ''
+featured: true
+date: 2026-08-11
+---
+## The problem
+
+Every working day, the planning team built the next day's blending and filling plan by hand: copying orders out of SAP, then assigning tanks, teams and start times from reference files and past plans.
+
+## What I built
+
+An AI agent that follows written task instructions to do this preparation. It pulls the SAP data into the planning template, splits it into sections and fills in tank, team, flush and start-time details using the reference files and previous plans. Anything it can't decide with confidence is flagged for a planner to check, so people review the plan instead of typing it.

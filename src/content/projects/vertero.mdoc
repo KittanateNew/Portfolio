@@ -1,0 +1,32 @@
+---
+title: VerteRo
+summary: A deep learning tool that measures spine rotation in scoliosis X-rays automatically. Published in Global Spine Journal (2026).
+cover: /src/assets/images/projects/vertero-cover.jpg
+gallery: []
+tech:
+  - Deep learning
+  - Faster R-CNN
+  - YOLO
+  - Python
+liveUrl: https://doi.org/10.1177/21925682261448826
+repoUrl: ''
+featured: true
+date: 2026-04-28
+---
+## The problem
+
+In adolescent idiopathic scoliosis, doctors need to know how much each vertebra is rotated. On a standard X-ray this is usually judged by eye with the Nash–Moe grading system, which gives only rough categories.
+
+## What we built
+
+VerteRo is a fully automated pipeline that reads a standard posteroanterior X-ray and estimates each vertebra's rotation in degrees. It works in four stages: find the spine region, segment each vertebra, locate the pedicles, then calculate the rotation angle from their geometry. We compared three detection models (Faster R-CNN, YOLOv11 L and YOLOv12 L) for the pedicle step.
+
+## Results
+
+- Faster R-CNN detected pedicles best, with an F1 score of 0.93.
+- Mean absolute error of 8.2° against reference angles.
+- Exact agreement with Nash–Moe grading on 71% of vertebrae.
+
+## Publication
+
+Kotheeranurak V, Sunpaweravong S, **Pongyanpat K**, Thanasuttiwat J, Jaroenwareekul S, Panya-Amornwat T, Singhatanadgige W, Limthongkul W, Honsawek S, Lipikorn R. *VerteRo: A Fully Automated Deep Neural Network Tool for Estimating Axial Vertebral Body Rotation in Adolescent Idiopathic Scoliosis.* Global Spine Journal. 2026;16(8):3918–3926. [doi:10.1177/21925682261448826](https://doi.org/10.1177/21925682261448826)

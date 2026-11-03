@@ -1,0 +1,23 @@
+---
+title: DC Volume Data Pipeline
+summary: 'Replaced a manual Excel report with an automated pipeline: daily AX and SAP exports in, tested data models, Power BI dashboard out.'
+cover: /src/assets/images/projects/dc-volume-data-pipeline-cover.jpg
+gallery: []
+tech:
+  - Python
+  - Prefect
+  - dbt
+  - PostgreSQL
+  - Power BI
+liveUrl: ''
+repoUrl: ''
+featured: true
+date: 2026-10-20
+---
+## The problem
+
+The distribution centre's daily In/Out volume report was put together by hand in Excel from four separate exports.
+
+## What I built
+
+A data pipeline that takes the daily AX and SAP export files, loads them into PostgreSQL and turns them into tested dbt models of inbound and outbound pallets and litres per day. Prefect runs the steps in order, and a Power BI dashboard shows the result to the DC manager and director.

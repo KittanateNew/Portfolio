@@ -26,3 +26,6 @@ pnpm-debug.log*
 # cloudflare / wrangler local state
 .wrangler/
 .dev.vars*
+
+# raw source photos (originals may contain GPS/EXIF data)
+Temp/
