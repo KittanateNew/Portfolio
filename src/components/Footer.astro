@@ -1,0 +1,88 @@
+---
+import { getContact, getProfile } from '../lib/reader';
+
+const profile = await getProfile();
+const contact = await getContact();
+const year = new Date().getFullYear();
+---
+
+<footer class="footer on-ink container-x" transition:persist="footer">
+  <div class="footer__row">
+    <a class="footer__email link-draw" href={`mailto:${contact.email}`} data-cursor="Write">{contact.email}</a>
+    <ul class="footer__socials eyebrow">
+      {profile.socials.map((s) => <li><a class="link-draw" href={s.url} target="_blank" rel="noopener">{s.label} ↗</a></li>)}
+    </ul>
+  </div>
+  <div class="footer__row footer__meta eyebrow">
+    <p>© {year} {profile.name}</p>
+    <p>
+      {profile.location}
+      {profile.timezone && (
+        <>
+          {' · '}
+          <time data-clock data-tz={profile.timezone}>--:--</time> local time
+        </>
+      )}
+    </p>
+    <a href="#main" class="link-draw" data-to-top>Back to top ↑</a>
+  </div>
+</footer>
+
+<script>
+  import { scrollToY } from '../lib/motion';
+
+  const clock = document.querySelector<HTMLTimeElement>('[data-clock]');
+  if (clock) {
+    let fmt: Intl.DateTimeFormat;
+    try {
+      fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: clock.dataset.tz });
+    } catch {
+      // Unknown time zone in the admin: fall back to the visitor's own.
+      fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+    const tick = () => {
+      const now = new Date();
+      clock.textContent = fmt.format(now);
+      clock.dateTime = now.toISOString();
+    };
+    tick();
+    setInterval(tick, 15_000);
+  }
+
+  document.querySelector('[data-to-top]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    scrollToY(0);
+  });
+</script>
+
+<style>
+  .footer {
+    display: grid;
+    gap: 3rem;
+    padding-block: 4rem 2rem;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .footer__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+  .footer__email {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  .footer__socials {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .footer__meta {
+    color: var(--color-muted-on-ink);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

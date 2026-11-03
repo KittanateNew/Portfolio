@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import About from '../components/About.astro';
+import Timeline from '../components/Timeline.astro';
+import Experience from '../components/Experience.astro';
+import Projects from '../components/Projects.astro';
+import Contact from '../components/Contact.astro';
+import {
+  getContact,
+  getEducation,
+  getExperience,
+  getProfile,
+  getProjects,
+  getSiteSettings,
+  getSkills,
+  getTimeline,
+} from '../lib/reader';
+
+const [profile, contact, settings, timeline, experience, education, skills, projects] = await Promise.all([
+  getProfile(),
+  getContact(),
+  getSiteSettings(),
+  getTimeline(),
+  getExperience(),
+  getEducation(),
+  getSkills(),
+  getProjects(),
+]);
+---
+
+<Base intro>
+  <Hero name={profile.name} headline={profile.headline} personality={profile.personality} location={profile.location} />
+  <About bioAst={profile.bioAst} photos={profile.photos} cv={profile.cv} />
+  {timeline.length > 0 && <Timeline entries={timeline} sceneEnabled={settings.sceneEnabled} />}
+  {(experience.length > 0 || education.length > 0 || skills.length > 0) && (
+    <Experience experience={experience} education={education} skills={skills} />
+  )}
+  {projects.length > 0 && <Projects projects={projects} />}
+  <Contact {...contact} />
+</Base>

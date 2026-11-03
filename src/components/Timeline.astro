@@ -1,0 +1,194 @@
+---
+/**
+ * Life story. The ordered list below is the real content (and the whole experience
+ * on phones, low-power devices, reduced motion and without JS). On capable desktops
+ * a 3D scene is loaded on demand and flown through by scrolling; the list then
+ * stays in the DOM for screen readers.
+ */
+import TimelineIsland from './timeline/TimelineIsland';
+import type { TimelineEntryView } from '../lib/types';
+import { monthYear, year } from '../lib/types';
+
+interface Props {
+  entries: TimelineEntryView[];
+  sceneEnabled: boolean;
+}
+const { entries, sceneEnabled } = Astro.props;
+const scene = sceneEnabled && entries.length > 1;
+/** Hydrate (and download React) only where the 3D scene could run. Mirrors canRender3D(). */
+const SCENE_MEDIA = '(hover: hover) and (pointer: fine) and (min-width: 768px) and (prefers-reduced-motion: no-preference)';
+---
+
+<section
+  id="story"
+  class="timeline on-ink"
+  aria-labelledby="story-title"
+  data-scene={scene ? 'on' : 'off'}
+  style={`--count:${entries.length}`}
+>
+  <div class="timeline__stage">
+    <header class="timeline__head container-x">
+      <h2 id="story-title" class="eyebrow">(02) The story so far</h2>
+      <p class="eyebrow timeline__hint" aria-hidden="true">Scroll to travel · Click a marker to jump</p>
+    </header>
+    {
+      scene && (
+        <div class="timeline__canvas">
+          <TimelineIsland client:media={SCENE_MEDIA} entries={entries} sectionId="story" />
+        </div>
+      )
+    }
+  </div>
+
+  <ol class="timeline__list container-x">
+    {
+      entries.map((e) => (
+        <li class="timeline__item" style={`--marker:${e.color}`} data-fade>
+          <p class="timeline__year">{year(e.start)}</p>
+          <div>
+            <p class="eyebrow timeline__meta">
+              {monthYear(e.start)}
+              {e.end && ` – ${monthYear(e.end)}`}
+              {e.location && ` · ${e.location}`}
+            </p>
+            <h3 class="timeline__title">{e.title}</h3>
+            {e.description && <p class="timeline__desc">{e.description}</p>}
+          </div>
+          {e.image && <img class="timeline__img" src={e.image} alt="" width="720" height="480" loading="lazy" decoding="async" />}
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<script>
+  import { onPageLoad, staggerIn, ScrollTrigger } from '../lib/motion';
+  import { canRender3D } from '../lib/device';
+
+  // In 3D mode the island takes over (see timeline/TimelineIsland.tsx); otherwise reveal the list.
+  onPageLoad(() => {
+    const section = document.querySelector<HTMLElement>('.timeline');
+    if (!section) return;
+    if (section.dataset.scene === 'on' && canRender3D()) return;
+    // CSS may have chosen the 3D layout from the media query alone; undo it.
+    if (!section.classList.contains('is-flat')) {
+      section.classList.add('is-flat');
+      ScrollTrigger.refresh();
+    }
+    staggerIn(section.querySelector('.timeline__list')!, '.timeline__item');
+  });
+</script>
+
+<style>
+  .timeline {
+    position: relative;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding-block: var(--spacing-section);
+  }
+
+  /* ---- List (default) --------------------------------------------------- */
+  .timeline__stage {
+    display: contents;
+  }
+  .timeline__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 4rem;
+  }
+  .timeline__hint,
+  .timeline__canvas {
+    display: none;
+  }
+  .timeline__list {
+    display: grid;
+    gap: 0;
+  }
+  .timeline__item {
+    display: grid;
+    grid-template-columns: minmax(5rem, 1fr) 3fr minmax(0, 2fr);
+    gap: var(--spacing-gutter);
+    padding-block: 2.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-paper) 18%, transparent);
+  }
+  .timeline__year {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 750;
+    line-height: 0.9;
+    color: var(--marker);
+  }
+  .timeline__meta {
+    color: var(--color-muted-on-ink);
+  }
+  .timeline__title {
+    margin-top: 0.6rem;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 650;
+    line-height: 1.1;
+  }
+  .timeline__desc {
+    max-width: 52ch;
+    margin-top: 0.75rem;
+    color: var(--color-muted-on-ink);
+  }
+  .timeline__img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: 0.5rem;
+  }
+  @media (max-width: 767px) {
+    .timeline__item {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  /* ---- 3D mode ------------------------------------------------------------
+     Decided in CSS (same query as SCENE_MEDIA) rather than by a class added from JS,
+     so the layout already has its full height when the router restores scroll on
+     back/forward. Timeline's script adds .is-flat if WebGL or the device says no. */
+  @media (hover: hover) and (pointer: fine) and (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    :global(html.js) .timeline[data-scene='on']:not(.is-flat) {
+      /* One screen of scroll per entry, plus room to settle on the last one. */
+      height: calc((var(--count) + 0.5) * 100svh);
+      padding-block: 0;
+    }
+    :global(html.js) .timeline[data-scene='on']:not(.is-flat) .timeline__stage {
+      position: sticky;
+      top: 0;
+      display: block;
+      height: 100svh;
+      overflow: hidden;
+    }
+    :global(html.js) .timeline[data-scene='on']:not(.is-flat) .timeline__head {
+      position: absolute;
+      inset: calc(var(--spacing-nav) + 0.5rem) 0 auto;
+      z-index: 2;
+      margin: 0;
+      pointer-events: none;
+    }
+    :global(html.js) .timeline[data-scene='on']:not(.is-flat) .timeline__hint {
+      display: block;
+      color: var(--color-muted-on-ink);
+    }
+    :global(html.js) .timeline[data-scene='on']:not(.is-flat) .timeline__canvas {
+      display: block;
+      position: absolute;
+      inset: 0;
+    }
+    /* Keep the list for assistive tech, hide it visually. */
+    :global(html.js) .timeline[data-scene='on']:not(.is-flat) .timeline__list {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+</style>

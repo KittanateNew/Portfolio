@@ -1,0 +1,114 @@
+---
+interface Props {
+  name: string;
+  cv: string | null;
+}
+const { name, cv } = Astro.props;
+
+const links = [
+  { href: '/#about', label: 'About' },
+  { href: '/#story', label: 'Story' },
+  { href: '/#work', label: 'Work' },
+  { href: '/#contact', label: 'Contact' },
+];
+const initials = name
+  .split(/\s+/)
+  .map((w) => w[0])
+  .join('')
+  .slice(0, 3);
+---
+
+<header class="nav container-x" transition:persist="nav">
+  <a href="/" class="nav__home" aria-label={`${name}, home`} data-cursor="Home">{initials}</a>
+  <nav aria-label="Main">
+    <ul class="nav__links eyebrow">
+      {links.map((l) => <li><a class="link-draw" href={l.href}>{l.label}</a></li>)}
+      {cv && <li><a class="nav__cv" href={cv} target="_blank" rel="noopener" data-cursor="PDF">CV ↗</a></li>}
+    </ul>
+  </nav>
+</header>
+
+<script>
+  import { ScrollTrigger } from '../lib/motion';
+
+  // Hide on scroll down, show on scroll up. Switch to light text over dark sections.
+  const nav = document.querySelector<HTMLElement>('.nav')!;
+  let darks: Element[] = [];
+
+  function checkInk() {
+    const probe = nav.offsetHeight / 2;
+    const over = darks.some((d) => {
+      const r = d.getBoundingClientRect();
+      return r.top <= probe && r.bottom >= probe;
+    });
+    nav.classList.toggle('is-on-ink', over);
+  }
+
+  ScrollTrigger.create({
+    start: 0,
+    end: 'max',
+    onUpdate: (self) => {
+      nav.classList.toggle('is-hidden', self.direction === 1 && self.scroll() > 200);
+      checkInk();
+    },
+  });
+
+  document.addEventListener('astro:page-load', () => {
+    darks = [...document.querySelectorAll('main .on-ink, footer.on-ink')];
+    nav.classList.remove('is-hidden');
+    checkInk();
+  });
+</script>
+
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--spacing-nav);
+    color: var(--color-ink);
+    transition:
+      translate var(--dur-base) var(--ease-out-expo),
+      color var(--dur-fast) var(--ease-soft);
+  }
+  .nav.is-hidden {
+    translate: 0 -100%;
+  }
+  .nav.is-on-ink {
+    color: var(--color-paper);
+  }
+  .nav__home {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--text-lg);
+    letter-spacing: -0.02em;
+  }
+  .nav__links {
+    display: flex;
+    gap: clamp(0.9rem, 2vw, 2rem);
+  }
+  .nav__cv {
+    padding: 0.35rem 0.8rem;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-pill);
+    transition:
+      background var(--dur-fast) var(--ease-soft),
+      color var(--dur-fast) var(--ease-soft);
+  }
+  .nav__cv:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .nav.is-on-ink .nav__cv:hover {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+  @media (max-width: 640px) {
+    .nav__links li:not(:last-child):not(:nth-last-child(2)) {
+      display: none;
+    }
+  }
+</style>

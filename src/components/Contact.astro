@@ -1,0 +1,239 @@
+---
+/**
+ * Marquee + call to action + contact form.
+ * The site is static, so the form doesn't post anywhere: it opens the visitor's
+ * mail app with the message pre-filled (and still works as a plain mailto link).
+ */
+interface Props {
+  email: string;
+  phone: string;
+  formEnabled: boolean;
+  availability: string;
+  ctaHeadline: string;
+  marqueeWords: readonly string[];
+}
+const { email, phone, formEnabled, availability, ctaHeadline, marqueeWords } = Astro.props;
+const words = marqueeWords.length ? marqueeWords : ["Let's talk"];
+---
+
+<section id="contact" class="contact on-ink" aria-labelledby="contact-title">
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track" data-marquee>
+      {
+        [0, 1].map(() => (
+          <div class="marquee__group">
+            {words.map((w) => (
+              <span class="marquee__word">
+                {w}
+                <span class="marquee__star">✺</span>
+              </span>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="contact__body container-x">
+    <div>
+      <h2 class="eyebrow contact__label">(05) Contact</h2>
+      <p id="contact-title" class="contact__cta" data-reveal>{ctaHeadline || 'Say hello'}</p>
+      {availability && <p class="eyebrow contact__avail"><span class="contact__dot"></span>{availability}</p>}
+      <p class="contact__direct">
+        <a class="link-draw" href={`mailto:${email}`} data-cursor="Write">{email}</a>
+        {phone && <a class="link-draw" href={`tel:${phone.replace(/\s+/g, '')}`}>{phone}</a>}
+      </p>
+    </div>
+
+    {
+      formEnabled && (
+        <form class="contact__form" action={`mailto:${email}`} method="post" enctype="text/plain" data-email={email}>
+          <label>
+            <span class="eyebrow">Your name</span>
+            <input name="name" autocomplete="name" required />
+          </label>
+          <label>
+            <span class="eyebrow">Your email</span>
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span class="eyebrow">Message</span>
+            <textarea name="message" rows="5" required />
+          </label>
+          <button type="submit" class="contact__send" data-cursor="Send">
+            Send message <span aria-hidden="true">→</span>
+          </button>
+          <p class="eyebrow contact__note">Opens your email app with the message ready to send.</p>
+        </form>
+      )
+    }
+  </div>
+</section>
+
+<script>
+  import { onPageLoad, marquee, revealText, fadeUp } from '../lib/motion';
+
+  onPageLoad(() => {
+    const section = document.querySelector<HTMLElement>('.contact');
+    if (!section) return;
+    const track = section.querySelector<HTMLElement>('[data-marquee]');
+    if (track) marquee(track, { speed: 90 });
+    revealText(section.querySelector('.contact__cta')!, { by: 'words' });
+
+    const form = section.querySelector<HTMLFormElement>('.contact__form');
+    if (form) {
+      fadeUp(form.querySelectorAll('label, button'), { y: 20 });
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        const subject = `Hello from ${data.get('name')}`;
+        const body = `${data.get('message')}\n\n— ${data.get('name')} (${data.get('email')})`;
+        location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      });
+    }
+  });
+</script>
+
+<style>
+  .contact {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding-block: var(--spacing-section) calc(var(--spacing-section) * 0.75);
+  }
+
+  .marquee {
+    overflow: hidden;
+    padding-block: 1rem;
+    border-block: 1px solid color-mix(in srgb, var(--color-paper) 18%, transparent);
+  }
+  .marquee__track {
+    display: flex;
+    width: max-content;
+  }
+  .marquee__group {
+    display: flex;
+  }
+  .marquee__word {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding-right: 0.4em;
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
+    font-weight: 750;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-display);
+    white-space: nowrap;
+  }
+  .marquee__star {
+    color: var(--color-accent);
+    font-size: 0.6em;
+  }
+
+  .contact__body {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: calc(var(--spacing-gutter) * 2);
+    margin-top: calc(var(--spacing-section) * 0.6);
+  }
+  .contact__label {
+    color: var(--color-muted-on-ink);
+  }
+  .contact__cta {
+    margin-top: 1.5rem;
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
+    font-weight: 750;
+    line-height: 0.92;
+    letter-spacing: var(--tracking-display);
+    text-transform: uppercase;
+  }
+  .contact__avail {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 2rem;
+    color: var(--color-muted-on-ink);
+  }
+  .contact__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #5bd68a;
+    box-shadow: 0 0 0 0 #5bd68a;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    70% {
+      box-shadow: 0 0 0 0.6rem transparent;
+    }
+  }
+  .contact__direct {
+    display: grid;
+    justify-items: start;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    font-size: var(--text-lg);
+  }
+
+  .contact__form {
+    display: grid;
+    gap: 1.5rem;
+    align-content: end;
+  }
+  .contact__form label {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .contact__form .eyebrow {
+    color: var(--color-muted-on-ink);
+  }
+  .contact__form input,
+  .contact__form textarea {
+    width: 100%;
+    padding: 0.6rem 0;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-paper) 35%, transparent);
+    background: transparent;
+    font-size: var(--text-lg);
+    resize: vertical;
+    transition: border-color var(--dur-fast) var(--ease-soft);
+  }
+  .contact__form input:focus,
+  .contact__form textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+  .contact__send {
+    justify-self: start;
+    display: inline-flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 1rem 1.6rem;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: var(--text-base);
+    transition: transform var(--dur-fast) var(--ease-out-expo);
+  }
+  .contact__send:hover {
+    transform: scale(1.04);
+  }
+  .contact__send span {
+    transition: translate var(--dur-fast) var(--ease-out-expo);
+  }
+  .contact__send:hover span {
+    translate: 0.3rem 0;
+  }
+  .contact__note {
+    color: var(--color-muted-on-ink);
+  }
+  @media (max-width: 900px) {
+    .contact__body {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

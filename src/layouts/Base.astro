@@ -1,0 +1,145 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+import { getProfile, getSiteSettings } from '../lib/reader';
+import { pageTransition } from '../lib/motion-tokens';
+import Cursor from '../components/Cursor.astro';
+import Preloader from '../components/Preloader.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  /** Page title. Defaults to the SEO title from Site settings. */
+  title?: string;
+  description?: string;
+  /** Show the intro preloader (home page, first visit per session). */
+  intro?: boolean;
+}
+
+const settings = await getSiteSettings();
+const profile = await getProfile();
+const { title, description = settings.seoDescription, intro = false } = Astro.props;
+const pageTitle = title ? `${title} — ${profile.name}` : settings.seoTitle;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = settings.ogImage ? new URL(settings.ogImage, Astro.site) : undefined;
+---
+
+<!doctype html>
+<html lang="en" style={`--accent:${settings.accentColor}`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="theme-color" content="#141311" />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Font cssVariable="--ff-display" preload />
+    <Font cssVariable="--ff-body" preload />
+    <Font cssVariable="--ff-mono" />
+
+    <!-- Runs before paint: enables JS-only styles and decides whether the intro plays. -->
+    <script is:inline define:vars={{ intro }}>
+      const root = document.documentElement;
+      root.classList.add('js');
+      let seen = false;
+      try {
+        seen = sessionStorage.getItem('intro-seen') === '1';
+      } catch {}
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (intro && !seen && !reduced) root.classList.add('is-preloading');
+
+      // The router replaces <html> attributes on navigation. Copy the classes set at
+      // runtime (js, has-cursor, Lenis state) onto the incoming document so they are
+      // in place before the router restores the scroll position.
+      if (!window.__classKeeper) {
+        window.__classKeeper = true;
+        document.addEventListener('astro:before-swap', (e) => {
+          const kept = [...document.documentElement.classList].filter((c) => c !== 'is-preloading');
+          e.newDocument.documentElement.classList.add(...kept);
+        });
+      }
+    </script>
+
+    <ClientRouter />
+  </head>
+  <body>
+    <a href="#main" class="skip-link eyebrow">Skip to content</a>
+    {intro && <Preloader name={profile.name} />}
+    <Cursor />
+    <Nav name={profile.name} cv={profile.cv} />
+
+    <main id="main" transition:animate={pageTransition}>
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>
+
+<script>
+  import { initSmoothScroll, onPageLoad, ScrollTrigger, getLenis, motionAllowed } from '../lib/motion';
+
+  // Same-page links like "/#work": scroll with Lenis instead of letting the router jump
+  // (a native jump is overridden by Lenis if it is mid-scroll). Capture phase runs
+  // before the router's listener, which skips events that are already handled.
+  window.addEventListener(
+    'click',
+    (e) => {
+      const a = (e.target as Element).closest?.<HTMLAnchorElement>('a[href*="#"]');
+      if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      const url = new URL(a.href);
+      if (url.origin !== location.origin || url.pathname !== location.pathname || !url.hash) return;
+      const target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+      if (!target) return;
+      e.preventDefault();
+      history.pushState(history.state, '', url.hash);
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(target, { offset: 0 });
+      else target.scrollIntoView({ behavior: motionAllowed() ? 'smooth' : 'auto' });
+      // Move keyboard focus too (the skip link depends on this).
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+    },
+    { capture: true }
+  );
+
+  onPageLoad(() => {
+    initSmoothScroll();
+    // The router has just restored or reset window scroll; sync Lenis to it. Resize first:
+    // Lenis still has the previous page's scroll limit and would clamp to it.
+    const lenis = getLenis();
+    lenis?.resize();
+    lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
+    // Fonts and images shift layout after first paint; re-measure triggers once settled.
+    document.fonts?.ready.then(() => ScrollTrigger.refresh());
+  });
+</script>
+
+<style>
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 200;
+    padding: 0.6rem 1rem;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border-radius: var(--radius-pill);
+    transform: translateY(-200%);
+  }
+  .skip-link:focus-visible {
+    transform: none;
+  }
+</style>

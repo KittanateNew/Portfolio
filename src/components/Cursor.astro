@@ -1,0 +1,118 @@
+---
+/**
+ * Custom cursor: a dot that follows the pointer and grows into a labelled disc
+ * over links and 3D markers. Only activates with a fine pointer and motion allowed.
+ * Elements can set a label with data-cursor="View".
+ */
+---
+
+<div class="cursor" aria-hidden="true" transition:persist="cursor">
+  <div class="cursor__dot"><span class="cursor__label"></span></div>
+</div>
+
+<script>
+  import { canUseCustomCursor } from '../lib/device';
+  import type { CursorDetail } from '../lib/types';
+
+  const el = document.querySelector<HTMLElement>('.cursor');
+  if (el && canUseCustomCursor()) {
+    const label = el.querySelector<HTMLElement>('.cursor__label')!;
+    document.documentElement.classList.add('has-cursor');
+
+    const set = ({ state, label: text = '' }: CursorDetail) => {
+      el.dataset.state = state;
+      el.classList.toggle('has-label', text !== '');
+      label.textContent = text;
+    };
+
+    // Track the pointer 1:1 (the native cursor is hidden, so any easing here reads
+    // as input lag). Writes are batched to one per frame.
+    let x = 0;
+    let y = 0;
+    let queued = false;
+    const write = () => {
+      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      queued = false;
+    };
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        x = e.clientX;
+        y = e.clientY;
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(write);
+        }
+        if (!el.classList.contains('is-visible')) el.classList.add('is-visible');
+      },
+      { passive: true }
+    );
+    document.addEventListener('pointerleave', () => el.classList.remove('is-visible'));
+
+    document.addEventListener('pointerover', (e) => {
+      const target = (e.target as Element).closest<HTMLElement>('a, button, [data-cursor], input, textarea, label');
+      if (!target) return set({ state: 'default' });
+      if (target.matches('input, textarea')) return set({ state: 'hidden' });
+      set({ state: 'link', label: target.dataset.cursor });
+    });
+
+    window.addEventListener('cursor:state', (e) => set((e as CustomEvent<CursorDetail>).detail));
+    document.addEventListener('astro:before-swap', () => set({ state: 'default' }));
+  }
+</script>
+
+<style>
+  .cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 300;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-soft);
+    mix-blend-mode: difference;
+    will-change: transform;
+  }
+  .cursor.is-visible {
+    opacity: 1;
+  }
+  /* Drawn at its largest size and scaled down, so growing on hover is a
+     compositor-only transform instead of a width/height relayout. */
+  .cursor__dot {
+    --scale: 0.14; /* ≈ 0.75rem */
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%) scale(var(--scale));
+    transition:
+      transform var(--dur-fast) var(--ease-out-expo),
+      opacity var(--dur-fast);
+  }
+  .cursor__label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #000;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity var(--dur-fast);
+  }
+  .cursor[data-state='link'] .cursor__dot {
+    --scale: 0.55; /* ≈ 3rem */
+  }
+  .cursor[data-state='marker'] .cursor__dot,
+  .cursor[data-state='link'].has-label .cursor__dot {
+    --scale: 1;
+  }
+  .cursor[data-state='marker'] .cursor__label,
+  .cursor[data-state='link'].has-label .cursor__label {
+    opacity: 1;
+  }
+  .cursor[data-state='hidden'] .cursor__dot {
+    opacity: 0;
+  }
+</style>

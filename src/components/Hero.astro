@@ -1,0 +1,88 @@
+---
+interface Props {
+  name: string;
+  headline: string;
+  personality: string;
+  location: string;
+}
+const { name, headline, personality, location } = Astro.props;
+---
+
+<section class="hero container-x" aria-labelledby="hero-title">
+  <p class="eyebrow hero__top" data-fade>
+    <span>{name}</span>
+    <span>{location}</span>
+  </p>
+
+  <h1 id="hero-title" class="display hero__title" data-reveal>{headline}</h1>
+
+  <div class="hero__bottom">
+    {personality && <p class="hero__fact" data-fade><span class="eyebrow">Fun fact</span> {personality}</p>}
+    <a href="#about" class="hero__scroll eyebrow" data-fade data-cursor="Scroll">
+      Scroll <span aria-hidden="true">↓</span>
+    </a>
+  </div>
+</section>
+
+<script>
+  import { onPageLoad, revealText, fadeUp, whenIntroDone, stagger } from '../lib/motion';
+
+  onPageLoad((ctx) => {
+    const hero = document.querySelector<HTMLElement>('.hero');
+    if (!hero) return;
+    whenIntroDone().then(() =>
+      ctx.add(() => {
+        revealText(hero.querySelector('.hero__title')!, { by: 'chars', scroll: false });
+        fadeUp(hero.querySelectorAll('[data-fade]'), { scroll: false, delay: 0.35, each: stagger.loose });
+      })
+    );
+  });
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100svh;
+    padding-block: calc(var(--spacing-nav) + 1rem) 2rem;
+  }
+  .hero__top {
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-muted);
+  }
+  .hero__title {
+    align-self: center;
+    max-width: 14ch;
+    /* Let one short word fill the width without overflowing on narrow screens. */
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  .hero__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+  .hero__fact {
+    max-width: 34ch;
+    font-size: var(--text-lg);
+    line-height: 1.35;
+  }
+  .hero__fact .eyebrow {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-muted);
+  }
+  .hero__scroll span {
+    display: inline-block;
+    animation: nudge 1.8s var(--ease-in-out-expo) infinite;
+  }
+  @keyframes nudge {
+    50% {
+      transform: translateY(0.35em);
+    }
+  }
+</style>

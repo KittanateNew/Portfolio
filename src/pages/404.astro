@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found">
+  <section class="lost container-x">
+    <p class="eyebrow">Error 404</p>
+    <h1 class="display">Lost?</h1>
+    <p class="lost__text">This page wandered off. The rest of the site is still here.</p>
+    <a href="/" class="lost__home link-draw eyebrow">← Back to the start</a>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    display: grid;
+    align-content: center;
+    gap: 1.5rem;
+    min-height: 100svh;
+    padding-block: var(--spacing-nav);
+  }
+  .lost .eyebrow {
+    color: var(--color-muted);
+  }
+  .lost__text {
+    max-width: 36ch;
+    font-size: var(--text-lg);
+  }
+  .lost__home {
+    justify-self: start;
+  }
+</style>

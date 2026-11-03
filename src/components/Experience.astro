@@ -1,0 +1,232 @@
+---
+import { Image } from 'astro:assets';
+import { dateRange, year } from '../lib/types';
+import type { getEducation, getExperience, getSkills } from '../lib/reader';
+
+interface Props {
+  experience: Awaited<ReturnType<typeof getExperience>>;
+  education: Awaited<ReturnType<typeof getEducation>>;
+  skills: Awaited<ReturnType<typeof getSkills>>;
+}
+const { experience, education, skills } = Astro.props;
+
+const categoryLabels: Record<string, string> = {
+  engineering: 'Engineering',
+  design: 'Design',
+  tools: 'Tools',
+  soft: 'Soft skills',
+  languages: 'Languages',
+};
+const skillGroups = Object.entries(Object.groupBy(skills, (s) => s.category)).filter(([, list]) => list?.length);
+---
+
+<section id="experience" class="exp container-x" aria-labelledby="exp-title">
+  <h2 id="exp-title" class="eyebrow exp__label">(03) Experience</h2>
+
+  <ol class="exp__jobs">
+    {
+      experience.map((job) => (
+        <li class="exp__job" data-fade>
+          <div class="exp__when eyebrow">
+            {dateRange(job.start, job.end)}
+            {job.location && <span>{job.location}</span>}
+          </div>
+          <div class="exp__body">
+            <h3 class="exp__role">
+              {job.role} <span class="exp__at">@ {job.company}</span>
+            </h3>
+            {job.description && <p class="exp__desc">{job.description}</p>}
+            {job.skills.length > 0 && (
+              <ul class="tags" aria-label="Skills used">
+                {job.skills.map((s) => <li>{s}</li>)}
+              </ul>
+            )}
+          </div>
+          {job.logo && <Image class="exp__logo" src={job.logo} alt={`${job.company} logo`} width={96} height={96} />}
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="exp__columns">
+    {
+      education.length > 0 && (
+        <div data-fade>
+          <h3 class="eyebrow exp__sub">Education</h3>
+          <ul class="exp__edu">
+            {education.map((ed) => (
+              <li>
+                <p class="exp__edu-school">{ed.school}</p>
+                <p class="exp__edu-degree">{[ed.degree, ed.field].filter(Boolean).join(', ')}</p>
+                <p class="eyebrow exp__edu-years">
+                  {year(ed.start)}–{ed.end ? year(ed.end) : 'now'}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+    {
+      skillGroups.length > 0 && (
+        <div data-fade>
+          <h3 class="eyebrow exp__sub">Skills</h3>
+          <dl class="exp__skills">
+            {skillGroups.map(([cat, list]) => (
+              <div>
+                <dt class="eyebrow">{categoryLabels[cat] ?? cat}</dt>
+                <dd>
+                  <ul class="exp__skill-list">
+                    {list!.map((s) => (
+                      <li>
+                        <span>{s.name}</span>
+                        <span class="exp__level" role="img" aria-label={`${s.level} out of 5`}>
+                          {Array.from({ length: 5 }, (_, i) => <i class={i < s.level ? 'on' : ''} />)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<script>
+  import { onPageLoad, fadeUp } from '../lib/motion';
+
+  onPageLoad(() => {
+    document.querySelectorAll<HTMLElement>('.exp [data-fade]').forEach((el) => fadeUp(el));
+  });
+</script>
+
+<style>
+  .exp {
+    padding-block: var(--spacing-section);
+  }
+  .exp__label {
+    color: var(--color-muted);
+    margin-bottom: 3rem;
+  }
+  .exp__job {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) 3fr auto;
+    gap: var(--spacing-gutter);
+    padding-block: 2.5rem;
+    border-top: 1px solid var(--color-ink);
+  }
+  .exp__job:last-child {
+    border-bottom: 1px solid var(--color-ink);
+  }
+  .exp__when {
+    display: grid;
+    gap: 0.35rem;
+    align-content: start;
+    color: var(--color-muted);
+  }
+  .exp__role {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .exp__at {
+    color: var(--color-muted);
+    font-weight: 500;
+  }
+  .exp__desc {
+    max-width: 60ch;
+    margin-top: 1rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+  }
+  .tags li {
+    padding: 0.2rem 0.7rem;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .exp__logo {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+    border-radius: 0.5rem;
+  }
+
+  .exp__columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(var(--spacing-gutter) * 2);
+    margin-top: 6rem;
+  }
+  .exp__sub {
+    margin-bottom: 1.5rem;
+    color: var(--color-muted);
+  }
+  .exp__edu {
+    display: grid;
+    gap: 1.75rem;
+  }
+  .exp__edu-school {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 650;
+    line-height: 1.1;
+  }
+  .exp__edu-years {
+    margin-top: 0.35rem;
+    color: var(--color-muted);
+  }
+  .exp__skills {
+    display: grid;
+    gap: 2rem;
+  }
+  .exp__skills dt {
+    margin-bottom: 0.6rem;
+  }
+  .exp__skill-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-block: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  }
+  .exp__level {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .exp__level i {
+    width: 0.55rem;
+    height: 0.55rem;
+    border: 1px solid var(--color-ink);
+    border-radius: 50%;
+  }
+  .exp__level i.on {
+    background: var(--color-ink);
+  }
+
+  @media (max-width: 767px) {
+    .exp__job {
+      grid-template-columns: 1fr auto;
+    }
+    .exp__when {
+      grid-column: 1 / -1;
+    }
+    .exp__body {
+      grid-column: 1;
+    }
+    .exp__columns {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

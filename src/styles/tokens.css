@@ -1,0 +1,63 @@
+/*
+ * Design tokens: the single source of truth for colour, type, space and motion.
+ * Exposed to Tailwind through @theme, so `bg-ink`, `text-display`, `ease-out-expo`,
+ * `p-gutter` etc. all resolve to these values.
+ *
+ * DESIGN: palette and type pairing are a first pass. Refine in the design session,
+ * but keep the token names so components don't need to change.
+ */
+
+:root {
+  /* Accent is set per-site from Keystatic (siteSettings.accentColor) on <html style="--accent:…">. */
+  --accent: #ff5b2e;
+
+  /* Motion. Mirrors src/lib/motion-tokens.ts */
+  --dur-fast: 350ms;
+  --dur-base: 700ms;
+  --dur-slow: 1100ms;
+}
+
+@theme inline {
+  /* Colour --------------------------------------------------------------- */
+  --color-ink: #141311;
+  --color-ink-soft: #2a2825;
+  --color-paper: #eeeae1;
+  --color-paper-deep: #e2ddd1;
+  /* 4.8:1 on paper, so it is safe for small text. */
+  --color-muted: #625d55;
+  --color-muted-on-ink: #a9a398;
+  /* Accent is for large type, fills and marks. It is NOT contrast-safe as small text on paper. */
+  --color-accent: var(--accent);
+
+  /* Fonts (self-hosted via Astro's Fonts API, see astro.config.mjs) ------- */
+  --font-display: var(--ff-display);
+  --font-sans: var(--ff-body);
+  --font-mono: var(--ff-mono);
+
+  /* Fluid type scale: min at 360px, max at 1600px viewport --------------- */
+  --text-xs: clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);
+  --text-sm: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  --text-xl: clamp(1.375rem, 1.2rem + 0.75vw, 2rem);
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.6vw, 3rem);
+  --text-3xl: clamp(2.25rem, 1.6rem + 3vw, 4.75rem);
+  --text-4xl: clamp(3rem, 1.8rem + 5.5vw, 8rem);
+  /* Full-bleed headline size: one short word spans the viewport. */
+  --text-display: clamp(3.75rem, 0.5rem + 15vw, 19rem);
+
+  --leading-display: 0.86;
+  --tracking-display: -0.035em;
+
+  /* Spacing ----------------------------------------------------------------- */
+  --spacing-gutter: clamp(1rem, 0.6rem + 2.2vw, 3rem);
+  --spacing-section: clamp(6rem, 3rem + 10vw, 14rem);
+  --spacing-nav: 4.5rem;
+
+  /* Easing (Tailwind: ease-out-expo, ease-in-out-expo, ease-soft) ---------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-expo: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
+  --radius-pill: 999px;
+}

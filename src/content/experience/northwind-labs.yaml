@@ -1,0 +1,10 @@
+company: Northwind Labs
+role: Senior Front-end Engineer
+start: 2021-03-01
+location: Remote
+description: Lead the web platform team. Rebuilt the design system and cut page weight by 60%.
+skills:
+  - TypeScript
+  - React
+  - WebGL
+logo: /src/assets/images/logos/northwind-labs.png

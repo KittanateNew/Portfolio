@@ -1,0 +1,125 @@
+---
+import { Picture } from 'astro:assets';
+import { Renderer } from '@astrojs/markdoc/components';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  bioAst: string;
+  photos: { src: ImageMetadata | undefined; alt: string }[];
+  cv: string | null;
+}
+const { bioAst, photos, cv } = Astro.props;
+---
+
+<section id="about" class="about container-x" aria-labelledby="about-title">
+  <h2 id="about-title" class="eyebrow about__label">(01) About</h2>
+
+  <div class="about__bio" data-fade>
+    <Renderer config={{}} stringifiedAst={bioAst} />
+    {cv && <a class="about__cv link-draw eyebrow" href={cv} target="_blank" rel="noopener" data-cursor="PDF">Download CV ↗</a>}
+  </div>
+
+  {
+    photos.length > 0 && (
+      <div class="about__photos">
+        {photos.slice(0, 2).map((p, i) => (
+          <figure class="about__photo" data-parallax={i === 0 ? -8 : 10}>
+            <Picture
+              src={p.src!}
+              alt={p.alt}
+              widths={[360, 560, 840]}
+              sizes="(max-width: 767px) 45vw, 22vw"
+              formats={['avif', 'webp']}
+              loading="lazy"
+            />
+          </figure>
+        ))}
+      </div>
+    )
+  }
+</section>
+
+<script>
+  import { onPageLoad, fadeUp, gsap, motionAllowed } from '../lib/motion';
+
+  onPageLoad(() => {
+    const about = document.querySelector<HTMLElement>('.about');
+    if (!about) return;
+    fadeUp(about.querySelectorAll('[data-fade]'));
+    if (!motionAllowed()) return;
+    about.querySelectorAll<HTMLElement>('[data-parallax]').forEach((el) => {
+      gsap.fromTo(
+        el,
+        { yPercent: -Number(el.dataset.parallax) },
+        {
+          yPercent: Number(el.dataset.parallax),
+          ease: 'none',
+          scrollTrigger: { trigger: about, start: 'top bottom', end: 'bottom top', scrub: true },
+        }
+      );
+    });
+  });
+</script>
+
+<style>
+  .about {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--spacing-gutter);
+    row-gap: 3rem;
+    padding-block: var(--spacing-section);
+  }
+  .about__label {
+    grid-column: 1 / -1;
+    color: var(--color-muted);
+  }
+  .about__bio {
+    grid-column: 1 / span 7;
+    font-size: var(--text-xl);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .about__bio :global(p + p) {
+    margin-top: 1em;
+  }
+  .about__bio :global(strong) {
+    font-weight: 600;
+  }
+  .about__bio :global(em) {
+    font-style: italic;
+  }
+  .about__cv {
+    display: inline-block;
+    margin-top: 2.5rem;
+  }
+  .about__photos {
+    grid-column: 9 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+  .about__photo:nth-child(2) {
+    margin-top: 30%;
+  }
+  .about__photo :global(img) {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    filter: grayscale(1) contrast(1.05);
+    transition: filter var(--dur-slow) var(--ease-out-expo);
+  }
+  .about__photo:hover :global(img) {
+    filter: none;
+  }
+  @media (max-width: 900px) {
+    .about__bio,
+    .about__photos {
+      grid-column: 1 / -1;
+    }
+    .about__photos {
+      max-width: 32rem;
+    }
+  }
+</style>

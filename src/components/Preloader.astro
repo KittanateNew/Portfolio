@@ -1,0 +1,95 @@
+---
+/**
+ * First-visit intro: a counter runs to 100 while fonts load, then the panel wipes up.
+ * Shown only when <html> has .is-preloading (set by the inline script in Base.astro).
+ * Fires `intro:done` on window when finished; see whenIntroDone() in lib/motion.
+ */
+interface Props {
+  name: string;
+}
+const { name } = Astro.props;
+---
+
+<div class="preloader on-ink" aria-hidden="true">
+  <p class="eyebrow preloader__name">{name}</p>
+  <p class="preloader__count"><span data-count>000</span></p>
+  <div class="preloader__bar"><span></span></div>
+</div>
+
+<script>
+  import { gsap, counter, duration, ease } from '../lib/motion';
+
+  const root = document.documentElement;
+  const el = document.querySelector<HTMLElement>('.preloader');
+
+  function finish() {
+    try {
+      sessionStorage.setItem('intro-seen', '1');
+    } catch {}
+    root.classList.remove('is-preloading');
+    el?.remove();
+    window.dispatchEvent(new Event('intro:done'));
+  }
+
+  if (el && root.classList.contains('is-preloading')) {
+    const count = el.querySelector<HTMLElement>('[data-count]')!;
+    const bar = el.querySelector<HTMLElement>('.preloader__bar span')!;
+    const minTime = new Promise((r) => setTimeout(r, 1400));
+    // Never block on fonts for long on a slow connection.
+    const fonts = Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 3000))]);
+
+    counter(count, { to: 100, pad: 3, scroll: false });
+    gsap.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: duration.xslow, ease: 'power3.out' });
+
+    Promise.all([minTime, fonts]).then(() => {
+      gsap
+        .timeline({ onComplete: finish })
+        .to([el.querySelector('.preloader__name'), count], { yPercent: -110, autoAlpha: 0, duration: duration.fast, ease: ease.inOut, stagger: 0.05 })
+        .to(el, { clipPath: 'inset(0 0 100% 0)', duration: duration.base, ease: ease.inOut }, '-=0.1');
+    });
+  } else {
+    el?.remove();
+  }
+</script>
+
+<style>
+  .preloader {
+    display: none;
+  }
+  :global(html.is-preloading) .preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: var(--spacing-gutter);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    clip-path: inset(0 0 0 0);
+  }
+  :global(html.is-preloading) {
+    overflow: hidden;
+  }
+  .preloader__count {
+    align-self: end;
+    justify-self: end;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    overflow: hidden;
+  }
+  .preloader__bar {
+    height: 2px;
+    margin-top: 1.5rem;
+    background: color-mix(in srgb, var(--color-paper) 15%, transparent);
+  }
+  .preloader__bar span {
+    display: block;
+    height: 100%;
+    background: var(--color-accent);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+</style>

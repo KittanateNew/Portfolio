@@ -1,0 +1,11 @@
+company: Siam Retail Group
+role: Web Developer
+start: 2018-07-01
+end: 2021-02-28
+location: Bangkok, Thailand
+description: Built the store locator and checkout flows used by two million customers a month.
+skills:
+  - JavaScript
+  - Node.js
+  - Accessibility
+logo: /src/assets/images/logos/siam-retail-group.png
