@@ -3,3 +3,4 @@ type: achievement
 start: 2026-04-28
 description: My senior project, VerteRo, was published as a peer-reviewed paper.
 markerColor: '#F2C14E'
+image: /src/assets/images/timeline/global-spine-journal.jpg
