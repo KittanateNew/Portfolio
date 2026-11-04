@@ -6,6 +6,12 @@ interface Props {
   location: string;
 }
 const { name, headline, personality, location } = Astro.props;
+/** The display size suits a few short words; step it down for longer headlines so it never overflows the first screen. */
+const size = headline.length > 48 ? 'long' : headline.length > 28 ? 'medium' : undefined;
+/** Short multi-sentence headlines ("Manual in. Automated out.") get one sentence per line, sized so the longest line fits. */
+const lines = size ? [headline] : headline.split(/(?<=[.!?])\s+/).filter(Boolean);
+const longest = Math.max(...lines.map((l) => l.length));
+const longestWord = Math.max(...headline.split(/\s+/).map((w) => w.length));
 ---
 
 <section class="hero container-x" aria-labelledby="hero-title">
@@ -14,7 +20,15 @@ const { name, headline, personality, location } = Astro.props;
     <span>{location}</span>
   </p>
 
-  <h1 id="hero-title" class="display hero__title" data-reveal>{headline}</h1>
+  <h1
+    id="hero-title"
+    class="display hero__title"
+    data-size={size ?? (lines.length > 1 ? 'lines' : undefined)}
+    style={lines.length > 1 ? `--chars:${longest};--word-chars:${longestWord}` : undefined}
+    data-reveal
+  >
+    {lines.map((l, i) => (i > 0 ? [<br />, l] : l))}
+  </h1>
 
   <div class="hero__bottom">
     {personality && <p class="hero__fact" data-fade><span class="eyebrow">Fun fact</span> {personality}</p>}
@@ -58,6 +72,31 @@ const { name, headline, personality, location } = Astro.props;
     /* Let one short word fill the width without overflowing on narrow screens. */
     overflow-wrap: break-word;
     hyphens: manual;
+  }
+  .hero__title[data-size='lines'] {
+    max-width: none;
+    white-space: nowrap;
+    /* Longest line fills the width (≈0.6em per uppercase glyph, measured), capped by the display size and the screen height. */
+    font-size: min(
+      var(--text-display),
+      calc((100vw - 2 * var(--spacing-gutter)) / (var(--chars) * 0.6)),
+      30svh
+    );
+  }
+  /* Phones: let the lines wrap and size by the longest word instead (wide glyphs like M run ≈0.65em), so it stays big without breaking a word. */
+  @media (max-width: 640px) {
+    .hero__title[data-size='lines'] {
+      white-space: normal;
+      font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-gutter)) / (var(--word-chars) * 0.72)));
+    }
+  }
+  .hero__title[data-size='medium'] {
+    max-width: 18ch;
+    font-size: clamp(3rem, 0.5rem + 9vw, 11rem);
+  }
+  .hero__title[data-size='long'] {
+    max-width: 22ch;
+    font-size: var(--text-4xl);
   }
   .hero__bottom {
     display: flex;
