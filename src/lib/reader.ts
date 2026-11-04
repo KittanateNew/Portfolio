@@ -13,6 +13,19 @@ export const reader = createReader(process.cwd(), keystaticConfig);
 const byDateDesc = <T>(get: (x: T) => string | null) => (a: T, b: T) =>
   (get(b) ?? '').localeCompare(get(a) ?? '');
 
+/** A project's video: an uploaded file wins over a link; YouTube links become an embed. */
+function toVideo(v: { file: string | null; url: string; poster: string | null; caption: string }): ProjectView['video'] {
+  const src = (v.file || v.url).trim();
+  if (!src) return null;
+  const yt = src.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  return {
+    kind: yt ? 'youtube' : 'file',
+    src: yt ? `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0` : src,
+    poster: v.poster,
+    caption: v.caption,
+  };
+}
+
 /** Markdoc AST as a string for @astrojs/markdoc's <Renderer />. */
 async function astString(field: () => Promise<{ node: unknown }>) {
   const { node } = await field();
@@ -89,6 +102,11 @@ export async function getProjects(): Promise<ProjectView[]> {
         tech: entry.tech,
         liveUrl: entry.liveUrl,
         repoUrl: entry.repoUrl,
+        video: toVideo(entry.video),
+        links: entry.links
+          .map((l) => ({ label: l.label, kind: l.kind, href: (l.file || l.url).trim() }))
+          .filter((l) => l.href)
+          .map((l) => ({ ...l, external: /^https?:\/\//.test(l.href) })),
         featured: entry.featured,
         cover: resolveImage(entry.cover),
         gallery: entry.gallery

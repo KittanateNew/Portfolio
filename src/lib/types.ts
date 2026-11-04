@@ -24,6 +24,10 @@ export interface ProjectView {
   tech: readonly string[];
   liveUrl: string | null;
   repoUrl: string | null;
+  /** Optional video shown under the cover. */
+  video: { kind: 'file' | 'youtube'; src: string; poster: string | null; caption: string } | null;
+  /** References and attachments: papers, guides, docs. `external` links leave the site. */
+  links: { label: string; kind: 'paper' | 'guide' | 'doc' | 'web' | 'video'; href: string; external: boolean }[];
   featured: boolean;
   cover: ImageMetadata | undefined;
   gallery: { src: ImageMetadata | undefined; alt: string }[];

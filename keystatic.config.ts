@@ -219,6 +219,50 @@ export default config({
         tech: fields.array(fields.text({ label: 'Tag' }), { label: 'Tech tags', itemLabel: (t) => t.value || 'Tag' }),
         liveUrl: fields.url({ label: 'Live URL' }),
         repoUrl: fields.url({ label: 'Repository URL' }),
+        video: fields.object(
+          {
+            file: fields.file({
+              label: 'Video file (MP4)',
+              description: 'Keep it under 25 MB (Cloudflare limit). It becomes public on the site.',
+              directory: 'public/videos',
+              publicPath: '/videos/',
+            }),
+            url: fields.text({
+              label: '…or video link',
+              description: 'A YouTube link, or a file on this site (/videos/…). Used when no file is uploaded.',
+            }),
+            poster: fields.image({ label: 'Poster image (optional)', directory: 'public/videos', publicPath: '/videos/' }),
+            caption: fields.text({ label: 'Caption', description: 'e.g. "3-minute explainer I made for the DC team (Thai voice-over)"' }),
+          },
+          { label: 'Video' }
+        ),
+        links: fields.array(
+          fields.object({
+            label: fields.text({ label: 'Label', validation: { length: { min: 1 } } }),
+            kind: fields.select({
+              label: 'Type',
+              options: [
+                { label: 'Paper', value: 'paper' },
+                { label: 'Guide', value: 'guide' },
+                { label: 'Document', value: 'doc' },
+                { label: 'Website', value: 'web' },
+                { label: 'Video', value: 'video' },
+              ],
+              defaultValue: 'web',
+            }),
+            url: fields.text({
+              label: 'URL',
+              description: 'A full link (https://…) or a file on this site (/docs/…). Leave empty if you upload a file below.',
+            }),
+            file: fields.file({
+              label: '…or upload a file',
+              description: 'PDF, HTML guide, etc. It becomes public on the site.',
+              directory: 'public/docs',
+              publicPath: '/docs/',
+            }),
+          }),
+          { label: 'References & attachments', itemLabel: (l) => l.fields.label.value || 'Link' }
+        ),
         featured: fields.checkbox({ label: 'Featured', defaultValue: false }),
         date: fields.date({ label: 'Date', validation: { isRequired: true } }),
       },

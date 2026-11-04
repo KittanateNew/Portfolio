@@ -1,0 +1,1361 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Payment Voucher Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2310152a'/%3E%3Crect x='25' y='13' width='22' height='29' rx='3' fill='%232b3df0'/%3E%3Crect x='17' y='20' width='24' height='32' rx='3' fill='%23ffffff'/%3E%3Crect x='21' y='26' width='12' height='3' rx='1.5' fill='%2310152a'/%3E%3Crect x='21' y='32' width='16' height='2.5' rx='1.25' fill='%23b9c0cf'/%3E%3Cpath d='M21 44h2v4h-2zM25 44h1v4h-1zM28 44h3v4h-3zM33 44h1v4h-1zM36 44h2v4h-2z' fill='%2310152a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Mitr:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+/* Layout: fixed WebGL stage behind a scrolling story; text sits on one side, the 3D papers rearrange on the other. */
+:root{
+  --bg:#e9ecf4; --bg-2:#dfe3ee; --surface:rgba(255,255,255,.82); --surface-solid:#ffffff;
+  --ink:#10152a; --ink-2:#565f78; --ink-3:#8a92a8; --line:rgba(16,21,42,.11);
+  --accent:#2b3df0; --accent-ink:#ffffff; --accent-soft:rgba(43,61,240,.10);
+  --green:#1d7f54; --green-bg:#e3f3ea; --amber:#a5670c; --amber-bg:#fcf0dc;
+  --red:#bb3b3b; --red-bg:#fbe8e8; --purple:#5d47c9; --purple-bg:#eeeafd;
+  --blue:#2463a9; --blue-bg:#e6effb; --grey:#687384; --grey-bg:#eceff4;
+  --key:#ffffff; --key-edge:#c9cfdd;
+  --f-display:"Unbounded","Mitr",system-ui,sans-serif;
+  --f-body:"Figtree","IBM Plex Sans Thai","Leelawadee UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono","Cascadia Mono",Consolas,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --r:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a0d17; --bg-2:#111527; --surface:rgba(20,24,40,.80); --surface-solid:#151a2b;
+    --ink:#eef1fb; --ink-2:#a1a9c1; --ink-3:#6f7894; --line:rgba(238,241,251,.12);
+    --accent:#8391ff; --accent-ink:#0a0d17; --accent-soft:rgba(131,145,255,.14);
+    --green:#5fc996; --green-bg:#10291e; --amber:#eab25a; --amber-bg:#2e2311;
+    --red:#f28d8d; --red-bg:#341a1c; --purple:#ad9ff5; --purple-bg:#211c3e;
+    --blue:#86b6f0; --blue-bg:#13233a; --grey:#a1a9c1; --grey-bg:#1e2436;
+    --key:#1c2236; --key-edge:#080a12; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a0d17; --bg-2:#111527; --surface:rgba(20,24,40,.80); --surface-solid:#151a2b;
+  --ink:#eef1fb; --ink-2:#a1a9c1; --ink-3:#6f7894; --line:rgba(238,241,251,.12);
+  --accent:#8391ff; --accent-ink:#0a0d17; --accent-soft:rgba(131,145,255,.14);
+  --green:#5fc996; --green-bg:#10291e; --amber:#eab25a; --amber-bg:#2e2311;
+  --red:#f28d8d; --red-bg:#341a1c; --purple:#ad9ff5; --purple-bg:#211c3e;
+  --blue:#86b6f0; --blue-bg:#13233a; --grey:#a1a9c1; --grey-bg:#1e2436;
+  --key:#1c2236; --key-edge:#080a12; color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:17px; line-height:1.6;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px))}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:60; background:var(--bg)}
+html[data-lang="en"] [lang="th"], html[data-lang="th"] [lang="en"]{display:none!important}
+html[data-lang="th"] body{line-height:1.75}
+::selection{background:var(--accent); color:var(--accent-ink)}
+a{color:inherit}
+button{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:6px}
+.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+
+/* ---------- stage ---------- */
+#stage{position:fixed; inset:0; width:100vw; height:100vh; z-index:0; display:block; pointer-events:none}
+.grain{position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode:multiply}
+:root[data-theme="dark"] .grain{mix-blend-mode:screen; opacity:.04}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .grain{mix-blend-mode:screen; opacity:.04} }
+.no-webgl #stage{display:none}
+
+/* ---------- preloader ---------- */
+#loader{position:fixed; inset:0; z-index:100; background:var(--ink); color:var(--bg); display:flex; flex-direction:column; justify-content:flex-end;
+  padding:max(24px, env(safe-area-inset-left,0px)); transition:transform 1s var(--ease)}
+#loader.done{transform:translateY(-101%)}
+#loader .count{font-family:var(--f-display); font-size:clamp(72px,16vw,220px); line-height:.9; font-weight:500; letter-spacing:-.04em}
+#loader .msg{font-size:15px; opacity:.6; margin-bottom:12px}
+
+/* ---------- header ---------- */
+.top{position:fixed; top:env(safe-area-inset-top,0px); left:0; right:0; z-index:50; display:flex; align-items:center; gap:16px;
+  padding:14px max(20px, env(safe-area-inset-right,0px)) 14px max(20px, env(safe-area-inset-left,0px)); pointer-events:none}
+.top > *{pointer-events:auto}
+.brand{display:flex; align-items:center; gap:10px; text-decoration:none; font-family:var(--f-display); font-size:13px; font-weight:600; letter-spacing:.02em}
+.brand i{width:30px; height:30px; border-radius:9px; background:var(--ink); display:grid; place-items:center}
+.brand i::after{content:""; width:12px; height:15px; border-radius:2px; background:var(--bg); box-shadow:3px -3px 0 -1px var(--accent)}
+.chapters{margin-left:auto; display:flex; gap:2px; background:var(--surface); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line); border-radius:999px; padding:4px}
+.chapters a{font-size:13px; font-weight:500; text-decoration:none; padding:6px 12px; border-radius:999px; color:var(--ink-2); transition:background .3s, color .3s}
+.chapters a:hover{color:var(--ink)}
+.chapters a.on{background:var(--ink); color:var(--bg)}
+.pill-group{display:flex; gap:8px; align-items:center}
+.lang{display:flex; background:var(--surface); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid var(--line); border-radius:999px; padding:4px}
+.lang button{border:0; background:none; padding:6px 11px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink-2)}
+.lang button[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+.btn{display:inline-flex; align-items:center; gap:10px; border:0; cursor:pointer; text-decoration:none; font-weight:600; font-size:15px;
+  padding:13px 22px; border-radius:999px; background:var(--ink); color:var(--bg); transition:transform .4s var(--ease), background .3s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:var(--surface); color:var(--ink); border:1px solid var(--line); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px)}
+.btn.accent{background:var(--accent); color:var(--accent-ink)}
+.btn.sm{padding:9px 16px; font-size:13px}
+.btn .arr{display:inline-block; transition:transform .4s var(--ease)}
+.btn:hover .arr{transform:translateX(4px)}
+@media (max-width:1100px){ .chapters{display:none} .pill-group{margin-left:auto} }
+
+/* ---------- HUD ---------- */
+.hud{position:fixed; z-index:40; bottom:calc(18px + env(safe-area-inset-bottom,0px)); left:max(20px, env(safe-area-inset-left,0px)); right:max(20px, env(safe-area-inset-right,0px));
+  display:flex; align-items:end; justify-content:space-between; pointer-events:none; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2)}
+.hud .ch{display:flex; gap:10px; align-items:baseline}
+.hud .ch b{font-family:var(--f-display); font-size:13px; color:var(--ink); letter-spacing:0}
+.hud .bar{width:120px; height:2px; background:var(--line); border-radius:2px; overflow:hidden}
+.hud .bar i{display:block; height:100%; width:0; background:var(--ink)}
+@media (max-width:700px){ .hud{display:none} }
+
+/* ---------- cursor ---------- */
+.cursor{position:fixed; z-index:90; left:0; top:0; pointer-events:none; width:38px; height:38px; margin:-19px 0 0 -19px; border-radius:50%;
+  border:1.5px solid var(--ink); opacity:0; transition:width .35s var(--ease), height .35s var(--ease), margin .35s var(--ease), background .3s, opacity .3s}
+.cursor.big{width:70px; height:70px; margin:-35px 0 0 -35px; background:var(--accent-soft); border-color:var(--accent)}
+.cursor-dot{position:fixed; z-index:91; left:0; top:0; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:var(--accent); pointer-events:none; opacity:0}
+.has-cursor .cursor, .has-cursor .cursor-dot{opacity:1}
+
+/* ---------- story ---------- */
+main{position:relative; z-index:2}
+.sec{position:relative; min-height:100vh; display:flex; align-items:center; padding-block:120px; max-width:1360px; margin:0 auto}
+.sec.center{justify-content:center; text-align:center}
+.col{width:min(560px, 100%); min-width:0; display:flex; flex-direction:column; gap:22px}
+.sec[data-side="right"] .col{margin-left:auto}
+.wide-col{width:min(1180px,100%); min-width:0; display:flex; flex-direction:column; gap:28px; margin:0 auto}
+.eyebrow{font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); display:flex; gap:10px; align-items:center}
+.eyebrow::before{content:""; width:22px; height:1.5px; background:currentColor}
+.center .eyebrow{justify-content:center}
+h1,h2,h3{font-family:var(--f-display); font-weight:500; margin:0; text-wrap:balance; letter-spacing:-.035em}
+html[data-lang="th"] h1, html[data-lang="th"] h2, html[data-lang="th"] h3{letter-spacing:0; line-height:1.25}
+h1{font-size:clamp(46px, 8.6vw, 132px); line-height:.95}
+h2{font-size:clamp(34px, 4.6vw, 64px); line-height:1.02}
+h3{font-size:20px; line-height:1.2; letter-spacing:-.02em}
+.lead{font-size:clamp(18px,1.6vw,21px); color:var(--ink-2); max-width:58ch; margin:0}
+p{margin:0}
+.muted{color:var(--ink-2)}
+.small{font-size:14px; color:var(--ink-2)}
+.card{background:var(--surface); backdrop-filter:blur(18px) saturate(1.2); -webkit-backdrop-filter:blur(18px) saturate(1.2); border:1px solid var(--line); border-radius:var(--r)}
+.kbd, kbd{font-family:var(--f-mono); font-size:12px; font-weight:700; padding:3px 7px; border-radius:6px; background:var(--key); border:1px solid var(--key-edge); box-shadow:0 2px 0 var(--key-edge); white-space:nowrap; color:var(--ink)}
+.chip{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; padding:3px 10px; border-radius:999px; white-space:nowrap}
+.chip::before{content:""; width:7px; height:7px; border-radius:50%; background:currentColor}
+.t-green{color:var(--green); background:var(--green-bg)} .t-amber{color:var(--amber); background:var(--amber-bg)}
+.t-red{color:var(--red); background:var(--red-bg)} .t-purple{color:var(--purple); background:var(--purple-bg)}
+.t-blue{color:var(--blue); background:var(--blue-bg)} .t-grey{color:var(--grey); background:var(--grey-bg)}
+
+/* reveal (content is visible at rest; JS only hides what is below the fold) */
+.pre{opacity:0; transform:translateY(46px)}
+.rv{transition:opacity 1.1s var(--ease), transform 1.1s var(--ease)}
+@media (prefers-reduced-motion: reduce){ .pre{opacity:1; transform:none} }
+
+/* hero */
+.hero{min-height:min(100svh, 980px); align-items:flex-end; padding-bottom:110px}
+.hero .col{width:min(900px,100%)}
+.hero h1 .line{display:block; overflow:hidden; padding-bottom:.06em}
+.hero h1 .line > span{display:inline-block; animation:rise 1.4s var(--ease) both; animation-delay:calc(var(--d) + var(--boot, 1.2s))}
+@keyframes rise{from{transform:translateY(105%)}}
+@media (prefers-reduced-motion: reduce){ .hero h1 .line > span{animation:none} }
+.hero h1 em{font-style:normal; color:var(--accent)}
+.facts{display:flex; flex-wrap:wrap; gap:8px 22px; font-size:14px; color:var(--ink-2)}
+.facts span{display:flex; gap:8px; align-items:center}
+.facts span::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--accent)}
+.row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+.scroll-cue{position:absolute; right:0; bottom:110px; writing-mode:vertical-rl; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-2); display:flex; gap:14px; align-items:center}
+.scroll-cue::after{content:""; width:1.5px; height:60px; background:linear-gradient(var(--ink-2), transparent); animation:cue 2s infinite}
+@keyframes cue{0%{transform:scaleY(0); transform-origin:top} 50%{transform:scaleY(1); transform-origin:top} 51%{transform-origin:bottom} 100%{transform:scaleY(0); transform-origin:bottom}}
+@media (max-width:800px){ .scroll-cue{display:none} }
+
+/* analogy list */
+.analogy{display:grid; gap:2px; border-radius:var(--r); overflow:hidden}
+.analogy > div{display:grid; grid-template-columns:44px 1fr; gap:14px; padding:16px 18px; background:var(--surface); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); align-items:start}
+.analogy .ic{width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-family:var(--f-display); font-weight:600; font-size:15px}
+.analogy b{display:block; font-size:16px}
+.analogy span{color:var(--ink-2); font-size:15px}
+
+/* journey */
+.journey{height:420vh; max-width:none; display:block; padding:0}
+.journey .sticky{position:sticky; top:0; height:100vh; display:flex; align-items:center; max-width:1360px; margin:0 auto}
+.stages{display:grid; gap:10px; counter-reset:st}
+.stage{display:grid; grid-template-columns:auto 1fr; gap:6px 16px; padding:16px 18px; border-radius:16px; border:1px solid transparent; transition:background .5s, border-color .5s, opacity .5s; opacity:.42}
+.stage.on{opacity:1; background:var(--surface); border-color:var(--line); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px)}
+.stage .n{grid-row:span 2; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-family:var(--f-display); font-size:13px; font-weight:600}
+.stage h3{font-size:18px; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.stage p{font-size:15px; color:var(--ink-2)}
+.cancel-note{font-size:14px; color:var(--ink-2); display:flex; gap:10px; align-items:flex-start}
+@media (max-height:760px){ .stage p{font-size:14px} .stage{padding:12px 14px} .journey h2{font-size:34px} }
+
+/* steps */
+.steps{list-style:none; margin:0; padding:0; display:grid; gap:12px; counter-reset:s}
+.steps li{counter-increment:s; display:grid; grid-template-columns:40px 1fr; gap:14px; align-items:start}
+.steps li::before{content:counter(s); width:40px; height:40px; border-radius:50%; border:1.5px solid var(--ink); display:grid; place-items:center; font-family:var(--f-display); font-size:14px; font-weight:600}
+.steps li > div{padding-top:7px; min-width:0}
+.mock-dlg{padding:20px; display:grid; gap:14px; font-size:14px}
+.mock-dlg .hd{display:flex; justify-content:space-between; align-items:center; gap:12px}
+.mock-dlg .hd b{font-family:var(--f-display); font-weight:500; font-size:16px}
+.mock-field{display:grid; gap:6px}
+.mock-field label{font-size:12.5px; color:var(--ink-2); font-weight:600}
+.mock-select{border:1px solid var(--line); border-radius:10px; padding:9px 12px; background:var(--surface-solid); display:flex; justify-content:space-between}
+.mock-drop{border:1.5px dashed var(--ink-3); border-radius:12px; padding:16px; text-align:center; color:var(--ink-2)}
+.tip{display:flex; gap:12px; padding:14px 16px; border-radius:14px; background:var(--accent-soft); font-size:15px}
+.tip b{color:var(--accent)}
+
+/* number splitter */
+.splitter{padding:22px; display:grid; gap:16px}
+.splitter input{width:100%; font-family:var(--f-mono); font-size:clamp(18px,2.4vw,26px); font-weight:700; letter-spacing:.08em; padding:14px 16px; border-radius:12px;
+  border:1.5px solid var(--line); background:var(--surface-solid); color:var(--ink); outline:none}
+.splitter input:focus{border-color:var(--accent)}
+.digits{display:flex; flex-wrap:wrap; gap:3px; min-height:62px; align-items:flex-start}
+.digits .d{font-family:var(--f-mono); font-weight:700; font-size:clamp(16px,2vw,22px); width:1.3em; height:1.9em; display:grid; place-items:center; border-radius:7px; animation:pop .4s var(--ease) both}
+@keyframes pop{from{transform:scale(.5); opacity:0}}
+.digits .dn{background:var(--blue-bg); color:var(--blue)} .digits .dy{background:var(--green-bg); color:var(--green)} .digits .bad{background:var(--red-bg); color:var(--red)} .digits .end{background:var(--amber-bg); color:var(--amber)}
+.digits .gap{width:10px}
+.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:13px; color:var(--ink-2)}
+.verdict{padding:14px 16px; border-radius:12px; font-size:15px}
+
+/* mode cards */
+.modes3{display:grid; gap:12px}
+.mode-card{padding:18px 20px; display:grid; grid-template-columns:46px 1fr; gap:6px 16px}
+.mode-card .ic{grid-row:span 2; width:46px; height:46px; border-radius:14px; display:grid; place-items:center}
+.mode-card h3{display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap}
+.mode-card p{font-size:15px; color:var(--ink-2)}
+
+/* playground */
+.play{display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:16px; text-align:left}
+@media (max-width:960px){ .play{grid-template-columns:1fr} }
+.pane{padding:20px; display:flex; flex-direction:column; gap:14px; min-width:0}
+.tabs{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; background:var(--grey-bg); padding:5px; border-radius:14px}
+.tabs button{border:0; background:none; border-radius:10px; padding:10px 6px; cursor:pointer; font-weight:600; font-size:14px; display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--ink-2)}
+.tabs button kbd{font-size:10.5px; padding:1px 5px}
+.tabs button[aria-checked="true"]{background:var(--surface-solid); color:var(--ink); box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.tabs button[data-m="receive"][aria-checked="true"]{color:var(--blue)}
+.tabs button[data-m="lend"][aria-checked="true"]{color:var(--purple)}
+.tabs button[data-m="return"][aria-checked="true"]{color:var(--green)}
+.lendbox{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px; border-radius:14px; background:var(--purple-bg)}
+.lendbox label{font-size:12px; font-weight:600; color:var(--purple); display:grid; gap:4px}
+.lendbox input, .scanrow input{font:inherit; color:var(--ink); background:var(--surface-solid); border:1.5px solid var(--line); border-radius:10px; padding:9px 12px; outline:none; width:100%; min-width:0}
+.lendbox input:focus, .scanrow input:focus{border-color:var(--accent)}
+.lendbox .hint{grid-column:1/-1; font-size:12.5px; color:var(--ink-2)}
+.scanrow{display:flex; gap:8px}
+.scanrow input{font-family:var(--f-mono); font-size:18px; font-weight:700; letter-spacing:.05em; padding:13px 14px}
+.ready{font-size:11px; letter-spacing:.14em; font-weight:700; color:var(--green); display:flex; gap:8px; align-items:center}
+.ready::before{content:""; width:7px; height:7px; border-radius:50%; background:currentColor; animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.result{border-radius:14px; padding:16px 18px; display:grid; gap:4px; border:1px solid transparent; animation:pop .45s var(--ease) both}
+.result b{font-family:var(--f-display); font-weight:500; font-size:19px}
+.result .sub{font-size:13.5px; opacity:.85}
+.result.idle{background:var(--grey-bg); color:var(--ink-2)}
+.choices{display:grid; gap:6px}
+.choices button{display:flex; gap:12px; align-items:center; text-align:left; border:1px solid var(--line); background:var(--surface-solid); border-radius:10px; padding:9px 12px; cursor:pointer}
+.choices button:hover{border-color:var(--accent)}
+.recent{display:grid; gap:4px; font-size:13.5px; max-height:180px; overflow:auto}
+.recent .e{display:grid; grid-template-columns:62px 1fr auto; gap:10px; align-items:center; padding:6px 0; border-bottom:1px solid var(--line)}
+.recent .e.undone{text-decoration:line-through; opacity:.5}
+.doclist{display:grid; gap:6px}
+.doc{display:grid; grid-template-columns:1fr auto; gap:2px 10px; align-items:center; padding:10px 12px; border-radius:12px; background:var(--surface-solid); border:1px solid var(--line); cursor:pointer; text-align:left; transition:border-color .2s, transform .3s var(--ease)}
+.doc:hover{border-color:var(--accent); transform:translateX(3px)}
+.doc .no{font-family:var(--f-mono); font-weight:700; font-size:14px}
+.doc .no i{font-style:normal; color:var(--ink-3)}
+.doc .meta{font-size:12.5px; color:var(--ink-2); grid-column:1}
+.doc .chip{grid-row:1 / span 2; grid-column:2}
+.missions{display:grid; gap:6px; font-size:14px}
+.missions li{display:flex; gap:10px; align-items:center; list-style:none}
+.missions li::before{content:""; width:18px; height:18px; flex:none; border-radius:6px; border:1.5px solid var(--ink-3); transition:background .3s, border-color .3s}
+.missions li.ok{color:var(--ink-2); text-decoration:line-through}
+.missions li.ok::before{background:var(--green); border-color:var(--green); box-shadow:inset 0 0 0 3px var(--surface-solid)}
+.missions ul{margin:0; padding:0; display:grid; gap:8px}
+.meter{height:6px; border-radius:6px; background:var(--grey-bg); overflow:hidden}
+.meter i{display:block; height:100%; background:var(--green); width:0; transition:width .6s var(--ease)}
+.linkbtn{border:0; background:none; padding:0; color:var(--accent); font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
+
+/* signals */
+.signals{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+@media (max-width:560px){ .signals{grid-template-columns:1fr} }
+.sig{padding:14px 16px; border-radius:14px; display:grid; gap:4px; border:1px solid var(--line); background:var(--surface); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px)}
+.sig b{font-size:15px}
+.sig span{font-size:13.5px; color:var(--ink-2)}
+.lights{display:flex; gap:10px; flex-wrap:wrap}
+
+/* stats */
+.stats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+@media (max-width:520px){ .stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.stat{padding:14px; border-radius:14px; background:var(--surface); border:1px solid var(--line); display:grid; gap:2px; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px)}
+.stat .k{font-size:12px; font-weight:600; color:var(--ink-2)}
+.stat .n{font-family:var(--f-display); font-size:30px; font-weight:500; font-variant-numeric:tabular-nums; line-height:1.1}
+.stat .s{font-size:11.5px; color:var(--ink-3)}
+.bul{margin:0; padding:0; list-style:none; display:grid; gap:10px}
+.bul li{display:grid; grid-template-columns:22px 1fr; gap:10px; font-size:15.5px}
+.bul li::before{content:"→"; color:var(--accent); font-weight:700}
+
+/* activity table */
+.tbl{overflow-x:auto; border-radius:14px; border:1px solid var(--line); background:var(--surface); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px)}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:440px}
+th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); white-space:nowrap}
+th{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-2); font-weight:600}
+tr.undone td{text-decoration:line-through; opacity:.5}
+tr:last-child td{border-bottom:0}
+
+/* request flow */
+.flow{display:grid; gap:0; position:relative}
+.flow .fs{display:grid; grid-template-columns:44px 1fr; gap:14px; padding-bottom:18px; position:relative}
+.flow .fs:not(:last-child)::after{content:""; position:absolute; left:21px; top:46px; bottom:2px; width:2px; background:linear-gradient(var(--purple), transparent)}
+.flow .dot{width:44px; height:44px; border-radius:50%; background:var(--purple-bg); color:var(--purple); display:grid; place-items:center; font-family:var(--f-display); font-weight:600; font-size:14px}
+.flow .who{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
+.flow p{font-size:15px}
+
+/* keys */
+.keys{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:10px; text-align:left}
+.keyc{padding:16px 18px; display:grid; gap:10px}
+.keyc .ks{display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:13px; color:var(--ink-3)}
+.keyc .ks kbd{font-size:14px; padding:6px 10px; border-radius:8px; box-shadow:0 3px 0 var(--key-edge)}
+.keyc p{font-size:14.5px; color:var(--ink-2)}
+
+/* quiz */
+.quiz{width:min(720px,100%); margin:0 auto; padding:26px; display:grid; gap:18px; text-align:left}
+.quiz .q{font-family:var(--f-display); font-weight:500; font-size:clamp(20px,2.4vw,26px); line-height:1.25; letter-spacing:-.02em}
+html[data-lang="th"] .quiz .q{letter-spacing:0}
+.opts{display:grid; gap:8px}
+.opts button{text-align:left; border:1.5px solid var(--line); background:var(--surface-solid); border-radius:14px; padding:14px 16px; cursor:pointer; font-size:16px; font-weight:500; display:flex; gap:12px; align-items:center; transition:border-color .2s, transform .3s var(--ease)}
+.opts button:hover:not(:disabled){border-color:var(--accent); transform:translateX(4px)}
+.opts button .l{width:28px; height:28px; border-radius:8px; display:grid; place-items:center; background:var(--grey-bg); font-weight:700; font-size:13px; flex:none}
+.opts button.right{border-color:var(--green); background:var(--green-bg)}
+.opts button.wrong{border-color:var(--red); background:var(--red-bg)}
+.opts button:disabled{cursor:default}
+.qfoot{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+.dots{display:flex; gap:6px}
+.dots i{width:28px; height:5px; border-radius:4px; background:var(--grey-bg)}
+.dots i.ok{background:var(--green)} .dots i.no{background:var(--red)} .dots i.cur{background:var(--ink)}
+.explain{font-size:15px; color:var(--ink-2); padding:12px 14px; border-radius:12px; background:var(--grey-bg)}
+
+/* finale */
+.finale h2{font-size:clamp(46px,8vw,120px)}
+footer{position:relative; z-index:2; max-width:1360px; margin:0 auto; padding-block:40px 70px; display:flex; flex-wrap:wrap; gap:12px 30px; justify-content:space-between; font-size:13px; color:var(--ink-2); border-top:1px solid var(--line)}
+
+/* phones: the stage sits behind the text, so give text a calm backing */
+@media (max-width:860px){
+  body{font-size:16px}
+  .sec{padding-block:96px; min-height:auto}
+  .hero{min-height:92svh}
+  .sec[data-side] .col{margin:0}
+  .col > .lead, .col > p{text-shadow:0 0 18px var(--bg), 0 0 8px var(--bg)}
+  .journey{height:auto}
+  .journey .sticky{position:relative; height:auto; padding-block:96px}
+  .stage{opacity:1; background:var(--surface); border-color:var(--line)}
+  .lendbox{grid-template-columns:1fr}
+}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<style id="portfolio-copy">/* Portfolio copy: the app itself is internal, so hide links to it. */a[href="document-check.html"]{display:none!important}</style>
+</head>
+<body>
+
+<div id="loader" aria-hidden="true">
+  <div class="msg"><span lang="en">Sorting the papers…</span><span lang="th">กำลังจัดเรียงเอกสาร…</span></div>
+  <div class="count" id="loadCount">0</div>
+</div>
+<canvas id="stage" aria-hidden="true"></canvas>
+<canvas class="grain" id="grain" aria-hidden="true"></canvas>
+<div class="cursor" aria-hidden="true"></div><div class="cursor-dot" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="brand" href="#intro" aria-label="Back to top"><i></i><span>PV&nbsp;Field&nbsp;Guide</span></a>
+  <nav class="chapters" aria-label="Chapters">
+    <a href="#what"><span lang="en">Idea</span><span lang="th">แนวคิด</span></a>
+    <a href="#journey"><span lang="en">Journey</span><span lang="th">เส้นทาง</span></a>
+    <a href="#setup"><span lang="en">Setup</span><span lang="th">เริ่มต้น</span></a>
+    <a href="#number"><span lang="en">Numbers</span><span lang="th">เลขเอกสาร</span></a>
+    <a href="#modes"><span lang="en">Modes</span><span lang="th">โหมด</span></a>
+    <a href="#try"><span lang="en">Try it</span><span lang="th">ลองเล่น</span></a>
+    <a href="#results"><span lang="en">Results</span><span lang="th">ผลลัพธ์</span></a>
+    <a href="#requests"><span lang="en">Requests</span><span lang="th">คำขอยืม</span></a>
+    <a href="#safe"><span lang="en">Backup</span><span lang="th">สำรองข้อมูล</span></a>
+    <a href="#quiz"><span lang="en">Quiz</span><span lang="th">แบบทดสอบ</span></a>
+  </nav>
+  <div class="pill-group">
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="th" aria-pressed="false">ไทย</button>
+    </div>
+    <a class="btn sm" href="document-check.html"><span lang="en">Open the app</span><span lang="th">เปิดโปรแกรม</span> <span class="arr">↗</span></a>
+  </div>
+</header>
+
+<div class="hud" aria-hidden="true">
+  <div class="ch"><b id="hudNum">00</b><span id="hudName">Intro</span></div>
+  <div class="bar"><i id="hudBar"></i></div>
+</div>
+
+<main>
+<!-- ============ HERO ============ -->
+<section class="sec hero" id="intro" data-scene="swirl" data-side="left" data-name="Intro|เริ่มต้น">
+  <div class="col">
+    <span class="eyebrow"><span lang="en">A friendly guide to Check List Payment Voucher</span><span lang="th">คู่มือใช้งาน Check List Payment Voucher ฉบับเข้าใจง่าย</span></span>
+    <h1 lang="en"><span class="line"><span style="--d:0s">Every paper</span></span><span class="line"><span style="--d:.12s">has a <em>home.</em></span></span></h1>
+    <h1 lang="th"><span class="line"><span style="--d:0s">เอกสารทุกใบ</span></span><span class="line"><span style="--d:.12s">มี<em>บ้าน</em>ของมัน</span></span></h1>
+    <p class="lead"><span lang="en">This app works like a library notebook for payment vouchers. It remembers which papers came in, who borrowed them, and which ones are still missing. Scroll down and you will know how to use it in about ten minutes.</span><span lang="th">โปรแกรมนี้เหมือนสมุดของห้องสมุดสำหรับใบสำคัญจ่าย มันจำได้ว่าเอกสารใบไหนมาถึงแล้ว ใครยืมไป และใบไหนยังหายอยู่ เลื่อนลงไปเรื่อย ๆ แล้วคุณจะใช้เป็นภายในประมาณสิบนาที</span></p>
+    <div class="row">
+      <a class="btn" href="#what"><span lang="en">Start learning</span><span lang="th">เริ่มเรียนรู้</span> <span class="arr">↓</span></a>
+      <a class="btn ghost" href="#try"><span lang="en">Skip to practice</span><span lang="th">ข้ามไปฝึกเลย</span> <span class="arr">→</span></a>
+    </div>
+    <div class="facts">
+      <span lang="en">Works offline</span><span lang="th">ใช้ได้แม้ไม่มีอินเทอร์เน็ต</span>
+      <span lang="en">Data stays on this computer</span><span lang="th">ข้อมูลอยู่ในเครื่องนี้เท่านั้น</span>
+      <span lang="en">One beep per paper</span><span lang="th">สแกนหนึ่งครั้ง ต่อเอกสารหนึ่งใบ</span>
+    </div>
+  </div>
+  <div class="scroll-cue"><span lang="en">Scroll</span><span lang="th">เลื่อนลง</span></div>
+</section>
+
+<!-- ============ WHAT ============ -->
+<section class="sec" id="what" data-scene="grid" data-side="left" data-name="The big idea|แนวคิดหลัก">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 1 · The big idea</span><span lang="th">บทที่ 1 · แนวคิดหลัก</span></span>
+    <h2 data-reveal><span lang="en">A list, a box, and a beep.</span><span lang="th">รายการ กล่อง และเสียงบี๊บ</span></h2>
+    <p class="lead" data-reveal><span lang="en">SAP gives us a long list of documents. Each one is a real piece of paper that should be in our storage. The app compares the list with the papers you actually hold, one scan at a time.</span><span lang="th">SAP ให้รายการเอกสารยาว ๆ มาหนึ่งชุด เอกสารแต่ละรายการคือกระดาษจริงที่ควรอยู่ในที่เก็บของเรา โปรแกรมจะเทียบรายการนั้นกับกระดาษที่คุณถืออยู่จริง ทีละใบที่สแกน</span></p>
+    <div class="analogy" data-reveal>
+      <div><span class="ic t-blue">1</span><p><b lang="en">The SAP list is the class register</b><b lang="th">รายการจาก SAP คือรายชื่อนักเรียน</b><span lang="en">It says who should be here.</span><span lang="th">บอกว่าใครควรมาถึงบ้าง</span></p></div>
+      <div><span class="ic t-green">2</span><p><b lang="en">Scanning is roll call</b><b lang="th">การสแกนคือการขานชื่อ</b><span lang="en">Each beep means “Here!”</span><span lang="th">เสียงบี๊บแต่ละครั้งแปลว่า “มาแล้ว!”</span></p></div>
+      <div><span class="ic t-purple">3</span><p><b lang="en">The app is the teacher’s notebook</b><b lang="th">โปรแกรมคือสมุดบันทึกของครู</b><span lang="en">It remembers everything, with the date and time.</span><span lang="th">จำทุกอย่างไว้ พร้อมวันที่และเวลา</span></p></div>
+    </div>
+    <p class="small" data-reveal><span lang="en">Everything is saved inside this web browser on this computer. Nothing leaves the computer unless you turn on borrow requests (chapter 9).</span><span lang="th">ทุกอย่างถูกบันทึกไว้ในเว็บเบราว์เซอร์ของเครื่องนี้ ไม่มีข้อมูลออกไปไหน ยกเว้นคุณเปิดใช้ระบบคำขอยืม (บทที่ 9)</span></p>
+  </div>
+</section>
+
+<!-- ============ JOURNEY ============ -->
+<section class="sec journey" id="journey" data-scene="journey" data-side="left" data-name="A paper's journey|เส้นทางของเอกสาร">
+  <div class="sticky">
+    <div class="col">
+      <span class="eyebrow"><span lang="en">Chapter 2 · A paper’s journey</span><span lang="th">บทที่ 2 · เส้นทางของเอกสาร</span></span>
+      <h2><span lang="en">Four places a paper can be.</span><span lang="th">เอกสารอยู่ได้ 4 สถานะ</span></h2>
+      <div class="stages" id="stages">
+        <div class="stage on"><span class="n t-grey">1</span><h3><span lang="en">Missing</span><span lang="th">ยังไม่ได้รับ (Missing)</span> <span class="chip t-grey">Missing</span></h3>
+          <p><span lang="en">It is in the SAP list, but not in our storage yet. Like a student who has not arrived.</span><span lang="th">มีอยู่ในรายการ SAP แต่ยังไม่อยู่ในที่เก็บ เหมือนนักเรียนที่ยังมาไม่ถึง</span></p></div>
+        <div class="stage"><span class="n t-green">2</span><h3><span lang="en">In storage</span><span lang="th">อยู่ในที่เก็บ</span> <span class="chip t-green">In storage</span></h3>
+          <p><span lang="en">You scanned it in Receive mode. It is safe in the box, and the app knows which shelf.</span><span lang="th">คุณสแกนในโหมด Receive แล้ว เอกสารปลอดภัยอยู่ในกล่อง และโปรแกรมรู้ว่าอยู่ชั้นไหน</span></p></div>
+        <div class="stage"><span class="n t-purple">3</span><h3><span lang="en">Borrowed</span><span lang="th">ถูกยืม</span> <span class="chip t-purple">Borrowed</span></h3>
+          <p><span lang="en">Someone from another department took it. The app writes down their name, department and the day it should come back. If that day passes, it turns <b>Overdue</b>.</span><span lang="th">มีคนจากแผนกอื่นยืมไป โปรแกรมจดชื่อ แผนก และวันที่ต้องคืน ถ้าเลยวันนั้นจะขึ้นว่า <b>Overdue</b> (เกินกำหนด)</span></p></div>
+        <div class="stage"><span class="n t-green">4</span><h3><span lang="en">Back in storage</span><span lang="th">คืนเข้าที่เก็บ</span> <span class="chip t-green">In storage</span></h3>
+          <p><span lang="en">They brought it back and you scanned it in Return mode. The loan is closed, and the history keeps the whole story.</span><span lang="th">ผู้ยืมนำมาคืน และคุณสแกนในโหมด Return การยืมจะถูกปิด และประวัติจะเก็บเรื่องราวไว้ทั้งหมด</span></p></div>
+      </div>
+      <p class="cancel-note"><span class="chip t-red">Cancelled</span><span><span lang="en">One special case: SAP reversed this document (clearing number starts with 39…). The app refuses to store it, so you can set it aside.</span><span lang="th">กรณีพิเศษ: เอกสารถูกกลับรายการใน SAP (เลข clearing ขึ้นต้นด้วย 39…) โปรแกรมจะไม่รับเข้าเก็บ ให้แยกไว้ต่างหาก</span></span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SETUP ============ -->
+<section class="sec" id="setup" data-scene="rain" data-side="right" data-name="Before you start|ก่อนเริ่มใช้งาน">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 3 · Before you start</span><span lang="th">บทที่ 3 · ก่อนเริ่มใช้งาน</span></span>
+    <h2 data-reveal><span lang="en">First, give the app the SAP list.</span><span lang="th">ขั้นแรก ใส่รายการจาก SAP ให้โปรแกรม</span></h2>
+    <ol class="steps" data-reveal>
+      <li><div><span lang="en">Export the document list from SAP as Excel (.xlsx), CSV or TXT.</span><span lang="th">ส่งออกรายการเอกสารจาก SAP เป็นไฟล์ Excel (.xlsx), CSV หรือ TXT</span></div></li>
+      <li><div><span lang="en">Open <b>document-check.html</b>, go to <b>Results</b> and click <b>Import SAP register</b>.</span><span lang="th">เปิดไฟล์ <b>document-check.html</b> ไปที่หน้า <b>Results</b> แล้วกด <b>Import SAP register</b></span></div></li>
+      <li><div><span lang="en"><b>Choose file</b>, or copy rows from Excel and paste them. Include the header row.</span><span lang="th">กด <b>Choose file</b> หรือคัดลอกแถวจาก Excel มาวาง อย่าลืมแถวหัวตาราง</span></div></li>
+      <li><div><span lang="en">Tell the app which column is the <b>Document number</b> and which is the <b>Fiscal year</b>.</span><span lang="th">เลือกว่าคอลัมน์ไหนคือ <b>เลขที่เอกสาร</b> และคอลัมน์ไหนคือ <b>ปีบัญชี</b></span></div></li>
+      <li><div><span lang="en">Click <b>Import</b>. Every document starts as <span class="chip t-grey">Missing</span>, waiting for its beep.</span><span lang="th">กด <b>Import</b> เอกสารทุกใบจะเริ่มเป็น <span class="chip t-grey">Missing</span> รอการสแกน</span></div></li>
+    </ol>
+    <div class="card mock-dlg" data-reveal aria-label="Picture of the import window">
+      <div class="hd"><b>Import SAP register</b><span class="small">✕</span></div>
+      <div class="mock-drop"><span lang="en">SupplierLineItems.xlsx · 1,248 rows</span><span lang="th">SupplierLineItems.xlsx · 1,248 แถว</span></div>
+      <div class="mock-field"><label>Document number column</label><div class="mock-select"><span>Journal Entry</span><span>▾</span></div></div>
+      <div class="mock-field"><label>Fiscal year column</label><div class="mock-select"><span>Fiscal Year</span><span>▾</span></div></div>
+      <div class="row" style="justify-content:flex-end"><span class="btn sm ghost">Cancel</span><span class="btn sm accent">Import</span></div>
+    </div>
+    <div class="tip" data-reveal><b>Tip</b><span><span lang="en">No real list yet? Open <b>Settings</b> (your initials, top right) and click <b>Load demo data</b> to practise. Already ticked papers in Excel? Use <b>Load current stock</b> (Status 1 = in storage, 2 = borrowed).</span><span lang="th">ยังไม่มีรายการจริง? เปิด <b>Settings</b> (อักษรย่อชื่อคุณ มุมขวาบน) แล้วกด <b>Load demo data</b> เพื่อฝึก ถ้าเคยติ๊กเอกสารไว้ใน Excel แล้ว ใช้ <b>Load current stock</b> (Status 1 = อยู่ในที่เก็บ, 2 = ถูกยืม)</span></span></div>
+  </div>
+</section>
+
+<!-- ============ NUMBER ============ -->
+<section class="sec" id="number" data-scene="fan" data-side="left" data-name="The secret code|รหัสลับของเอกสาร">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 4 · The secret code</span><span lang="th">บทที่ 4 · รหัสลับของเอกสาร</span></span>
+    <h2 data-reveal><span lang="en">Every paper has a 14-digit name.</span><span lang="th">เอกสารทุกใบมีชื่อ 14 หลัก</span></h2>
+    <p class="lead" data-reveal><span lang="en">10 digits for the document number, then 4 digits for the fiscal year. Type in the box below and watch the app read it.</span><span lang="th">10 หลักแรกคือเลขที่เอกสาร ตามด้วย 4 หลักคือปีบัญชี ลองพิมพ์ในช่องด้านล่าง แล้วดูว่าโปรแกรมอ่านอย่างไร</span></p>
+    <div class="card splitter" data-reveal>
+      <label for="splitIn" class="small"><span lang="en">Type or paste a number</span><span lang="th">พิมพ์หรือวางตัวเลข</span></label>
+      <input id="splitIn" inputmode="numeric" autocomplete="off" value="35000030582026" maxlength="20">
+      <div class="digits" id="splitDigits" aria-live="polite"></div>
+      <div class="legend"><span><span class="chip t-blue">3500003058</span> <span lang="en">document number</span><span lang="th">เลขที่เอกสาร</span></span><span><span class="chip t-green">2026</span> <span lang="en">fiscal year</span><span lang="th">ปีบัญชี</span></span></div>
+      <div class="verdict" id="splitVerdict"></div>
+      <div class="row" style="gap:8px"><span class="small"><span lang="en">Try:</span><span lang="th">ลอง:</span></span>
+        <button class="btn sm ghost" type="button" data-split="35000030582026">14</button>
+        <button class="btn sm ghost" type="button" data-split="3058">3058</button>
+        <button class="btn sm ghost" type="button" data-split="350000305820">12</button>
+      </div>
+    </div>
+    <div class="tip" data-reveal><b lang="en">Shortcut</b><b lang="th">ทางลัด</b><span><span lang="en">Typing the same start every time? Tick <b>Typing shortcut</b> under the scanner. Set a Prefix like <span class="mono">350000</span> and a Suffix like <span class="mono">2026</span>, then type only the middle digits.</span><span lang="th">พิมพ์ตัวเลขขึ้นต้นซ้ำ ๆ ทุกครั้ง? ติ๊ก <b>Typing shortcut</b> ใต้ช่องสแกน ตั้ง Prefix เช่น <span class="mono">350000</span> และ Suffix เช่น <span class="mono">2026</span> แล้วพิมพ์แค่ตัวเลขตรงกลาง</span></span></div>
+  </div>
+</section>
+
+<!-- ============ MODES ============ -->
+<section class="sec" id="modes" data-scene="stack" data-side="right" data-name="Three modes|สามโหมด">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 5 · Three buttons, three jobs</span><span lang="th">บทที่ 5 · สามปุ่ม สามหน้าที่</span></span>
+    <h2 data-reveal><span lang="en">Pick a mode, then scan.</span><span lang="th">เลือกโหมด แล้วสแกน</span></h2>
+    <p class="lead" data-reveal><span lang="en">On the <b>Check</b> page there are three big buttons above the scanner box. The mode tells the app what the beep means.</span><span lang="th">ในหน้า <b>Check</b> มีปุ่มใหญ่สามปุ่มอยู่เหนือช่องสแกน โหมดจะบอกโปรแกรมว่าเสียงบี๊บนั้นหมายถึงอะไร</span></p>
+    <div class="modes3">
+      <div class="card mode-card" data-reveal><span class="ic t-blue">↓</span><h3><span lang="en">Receive</span><span lang="th">รับเข้า (Receive)</span> <kbd>Alt+1</kbd></h3>
+        <p><span lang="en">A paper arrives. Scan it to put it into storage. Beside the scanner you can pick the <b>Company</b> and the shelf (<b>Store at location</b>).</span><span lang="th">เอกสารมาถึง สแกนเพื่อนำเข้าที่เก็บ ข้างช่องสแกนเลือก <b>Company</b> และชั้นที่เก็บ (<b>Store at location</b>) ได้</span></p></div>
+      <div class="card mode-card" data-reveal><span class="ic t-purple">↗</span><h3><span lang="en">Lend out</span><span lang="th">ให้ยืม (Lend out)</span> <kbd>Alt+2</kbd></h3>
+        <p><span lang="en">A coworker borrows papers. First fill in <b>Borrower name</b>, <b>Department</b>, borrow date and expected return date. They stay pinned, so you can scan many papers for the same person.</span><span lang="th">เพื่อนร่วมงานมายืม กรอก <b>ชื่อผู้ยืม</b> <b>แผนก</b> วันที่ยืม และวันที่คาดว่าจะคืนก่อน ข้อมูลจะค้างไว้ จึงสแกนได้หลายใบสำหรับคนเดียวกัน</span></p></div>
+      <div class="card mode-card" data-reveal><span class="ic t-green">↩</span><h3><span lang="en">Return</span><span lang="th">รับคืน (Return)</span> <kbd>Alt+3</kbd></h3>
+        <p><span lang="en">The paper comes back. Just scan it. The app already knows who had it.</span><span lang="th">เอกสารกลับมาแล้ว แค่สแกน โปรแกรมรู้อยู่แล้วว่าใครยืมไป</span></p></div>
+    </div>
+    <p class="small" data-reveal><span lang="en">After each scan the box clears itself and says <b class="mono">READY FOR NEXT SCAN</b>. A barcode scanner types the number and presses Enter for you.</span><span lang="th">หลังสแกนแต่ละครั้ง ช่องจะล้างตัวเองและขึ้นว่า <b class="mono">READY FOR NEXT SCAN</b> เครื่องสแกนบาร์โค้ดจะพิมพ์ตัวเลขและกด Enter ให้เอง</span></p>
+  </div>
+</section>
+
+<!-- ============ PLAYGROUND ============ -->
+<section class="sec center" id="try" data-scene="swirl" data-side="center" data-name="Practice|ฝึกใช้งาน">
+  <div class="wide-col">
+    <div style="display:grid; gap:16px; justify-items:center">
+      <span class="eyebrow" data-reveal><span lang="en">Chapter 6 · Your turn</span><span lang="th">บทที่ 6 · ถึงตาคุณแล้ว</span></span>
+      <h2 data-reveal><span lang="en">Practise with pretend papers.</span><span lang="th">ฝึกกับเอกสารจำลอง</span></h2>
+      <p class="lead" data-reveal><span lang="en">This works like the real Check page, but nothing here touches your real data. Click a paper in the practice list to fill in its number, or type it yourself, then press Enter.</span><span lang="th">ส่วนนี้ทำงานเหมือนหน้า Check จริง แต่ไม่แตะข้อมูลจริงของคุณเลย คลิกเอกสารในรายการฝึกเพื่อใส่เลข หรือพิมพ์เอง แล้วกด Enter</span></p>
+    </div>
+    <div class="play" id="play">
+      <div class="card pane">
+        <div class="tabs" role="radiogroup" aria-label="Scan mode">
+          <button type="button" role="radio" data-m="receive" aria-checked="true"><span lang="en">Receive</span><span lang="th">รับเข้า</span><kbd>Alt+1</kbd></button>
+          <button type="button" role="radio" data-m="lend" aria-checked="false"><span lang="en">Lend out</span><span lang="th">ให้ยืม</span><kbd>Alt+2</kbd></button>
+          <button type="button" role="radio" data-m="return" aria-checked="false"><span lang="en">Return</span><span lang="th">รับคืน</span><kbd>Alt+3</kbd></button>
+        </div>
+        <div class="lendbox" id="lendBox" hidden>
+          <label><span lang="en">Borrower name</span><span lang="th">ชื่อผู้ยืม</span><input id="simName" autocomplete="off" placeholder="e.g. Nok"></label>
+          <label><span lang="en">Department</span><span lang="th">แผนก</span><input id="simDept" autocomplete="off" placeholder="e.g. Accounting"></label>
+          <span class="hint"><span lang="en">Due back in 7 days (the default loan period from Settings).</span><span lang="th">กำหนดคืนใน 7 วัน (ค่าเริ่มต้นจาก Settings)</span></span>
+        </div>
+        <form class="scanrow" id="simForm" autocomplete="off">
+          <label for="simIn" class="small" hidden>Document number</label>
+          <input id="simIn" inputmode="numeric" placeholder="Scan or type document number" aria-label="Document number">
+          <button class="btn" type="submit" id="simGo">Receive</button>
+        </form>
+        <div class="row" style="justify-content:space-between"><span class="ready">READY FOR NEXT SCAN</span><span class="small"><span lang="en">14 digits, or just the last digits</span><span lang="th">14 หลัก หรือแค่ตัวท้าย ๆ</span></span></div>
+        <div id="simResult"></div>
+        <div class="row" style="justify-content:space-between">
+          <b style="font-size:13px"><span lang="en">Recent entries</span><span lang="th">รายการล่าสุด</span></b>
+          <button class="btn sm ghost" type="button" id="simUndo"><span lang="en">Undo last</span><span lang="th">ย้อนกลับ</span> <kbd>Ctrl+Z</kbd></button>
+        </div>
+        <div class="recent" id="simRecent"></div>
+      </div>
+      <div style="display:grid; gap:16px; align-content:start; min-width:0">
+        <div class="card pane">
+          <div class="row" style="justify-content:space-between"><b style="font-size:13px"><span lang="en">Practice SAP list (FY 2026)</span><span lang="th">รายการ SAP สำหรับฝึก (ปี 2026)</span></b><button class="linkbtn" type="button" id="simReset"><span lang="en">Start over</span><span lang="th">เริ่มใหม่</span></button></div>
+          <div class="doclist" id="simDocs"></div>
+        </div>
+        <div class="card pane missions">
+          <div class="row" style="justify-content:space-between"><b style="font-size:13px"><span lang="en">Missions</span><span lang="th">ภารกิจ</span></b><span class="small" id="missionCount">0 / 7</span></div>
+          <div class="meter"><i id="missionBar"></i></div>
+          <ul id="missions"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIGNALS ============ -->
+<section class="sec" id="signals" data-scene="ring" data-side="left" data-name="Colors|ความหมายของสี">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 7 · Reading the signals</span><span lang="th">บทที่ 7 · อ่านสัญญาณ</span></span>
+    <h2 data-reveal><span lang="en">Colors tell you what happened.</span><span lang="th">สีบอกว่าเกิดอะไรขึ้น</span></h2>
+    <p class="lead" data-reveal><span lang="en">Think of traffic lights. Every result also plays its own sound (you can turn sound off with the speaker button).</span><span lang="th">คิดถึงไฟจราจร ผลลัพธ์แต่ละแบบยังมีเสียงของตัวเองด้วย (ปิดเสียงได้ที่ปุ่มลำโพง)</span></p>
+    <div class="lights" data-reveal>
+      <span class="chip t-green"><span lang="en">Green = all good</span><span lang="th">เขียว = เรียบร้อย</span></span>
+      <span class="chip t-amber"><span lang="en">Amber = look again</span><span lang="th">ส้ม = ตรวจอีกครั้ง</span></span>
+      <span class="chip t-red"><span lang="en">Red = stop</span><span lang="th">แดง = หยุดก่อน</span></span>
+      <span class="chip t-purple"><span lang="en">Purple = lent out</span><span lang="th">ม่วง = ถูกยืม</span></span>
+    </div>
+    <div class="signals" data-reveal>
+      <div class="sig"><span class="chip t-green">Received</span><span lang="en">Stored. Put the paper in the box.</span><span lang="th">รับเข้าแล้ว นำเอกสารใส่กล่องได้เลย</span></div>
+      <div class="sig"><span class="chip t-green">Returned</span><span lang="en">The loan is closed. It is back in storage.</span><span lang="th">ปิดการยืมแล้ว เอกสารกลับเข้าที่เก็บ</span></div>
+      <div class="sig"><span class="chip t-purple">Lent out</span><span lang="en">Recorded under the borrower’s name and due date.</span><span lang="th">บันทึกชื่อผู้ยืมและวันกำหนดคืนแล้ว</span></div>
+      <div class="sig"><span class="chip t-amber">Already received</span><span lang="en">You scanned this one before. Nothing changed.</span><span lang="th">ใบนี้เคยสแกนแล้ว ไม่มีอะไรเปลี่ยน</span></div>
+      <div class="sig"><span class="chip t-amber">Already borrowed</span><span lang="en">Someone still has it. If it is in your hand, use <b>Mark as returned</b>.</span><span lang="th">ยังมีคนยืมอยู่ ถ้าเอกสารอยู่ในมือคุณ ให้กด <b>Mark as returned</b></span></div>
+      <div class="sig"><span class="chip t-amber">Not received yet</span><span lang="en">Receive it first (Alt+1), then lend or return.</span><span lang="th">ต้องรับเข้าก่อน (Alt+1) แล้วจึงให้ยืมหรือรับคืน</span></div>
+      <div class="sig"><span class="chip t-amber">Not on loan</span><span lang="en">It is already in storage. No loan to close.</span><span lang="th">อยู่ในที่เก็บอยู่แล้ว ไม่มีการยืมให้ปิด</span></div>
+      <div class="sig"><span class="chip t-amber">Type more digits</span><span lang="en">Too many papers end with those digits. 4–5 digits usually find one.</span><span lang="th">มีเอกสารลงท้ายแบบนี้หลายใบเกินไป พิมพ์ 4–5 หลักมักเจอใบเดียว</span></div>
+      <div class="sig"><span class="chip t-amber">Different company</span><span lang="en">The paper belongs to another company. Change <b>Company</b> beside the scanner.</span><span lang="th">เอกสารเป็นของบริษัทอื่น เปลี่ยน <b>Company</b> ข้างช่องสแกน</span></div>
+      <div class="sig"><span class="chip t-red">Not in SAP list</span><span lang="en">No match. Check the barcode. It is saved under “Not in SAP” for follow-up.</span><span lang="th">ไม่พบในรายการ ตรวจบาร์โค้ด ระบบเก็บไว้ในกลุ่ม “Not in SAP” เพื่อติดตาม</span></div>
+      <div class="sig"><span class="chip t-red">Document cancelled</span><span lang="en">Reversed in SAP. Do not file it.</span><span lang="th">ถูกกลับรายการใน SAP ไม่ต้องจัดเก็บ</span></div>
+      <div class="sig"><span class="chip t-red">Check the number</span><span lang="en">11–13 or more than 14 digits. Type again.</span><span lang="th">ตัวเลข 11–13 หลัก หรือเกิน 14 หลัก พิมพ์ใหม่</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="sec" id="results" data-scene="bars" data-side="right" data-name="Results page|หน้าผลลัพธ์">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 8 · The big picture</span><span lang="th">บทที่ 8 · ภาพรวมทั้งหมด</span></span>
+    <h2 data-reveal><span lang="en">Results counts everything for you.</span><span lang="th">หน้า Results นับทุกอย่างให้คุณ</span></h2>
+    <p class="lead" data-reveal><span lang="en">These six numbers come from your practice above. Change something in the practice and watch them move.</span><span lang="th">ตัวเลขหกช่องนี้มาจากการฝึกด้านบน ลองเปลี่ยนอะไรในการฝึก แล้วดูตัวเลขขยับ</span></p>
+    <div class="stats" id="simStats" data-reveal></div>
+    <ul class="bul" data-reveal>
+      <li><span><span lang="en"><b>Search</b> by document number, supplier, borrower or department.</span><span lang="th"><b>ค้นหา</b> ด้วยเลขเอกสาร ผู้ขาย ผู้ยืม หรือแผนก</span></span></li>
+      <li><span><span lang="en"><b>Filter</b> by company, fiscal year, post date, status and location.</span><span lang="th"><b>กรอง</b> ตามบริษัท ปีบัญชี วันที่ผ่านรายการ สถานะ และที่เก็บ</span></span></li>
+      <li><span><span lang="en"><b>Copy for Excel</b> or <b>Download CSV</b> to send a list to your team.</span><span lang="th"><b>Copy for Excel</b> หรือ <b>Download CSV</b> เพื่อส่งรายการให้ทีม</span></span></li>
+      <li><span><span lang="en"><b>Move…</b> sends the filtered documents to another shelf location.</span><span lang="th"><b>Move…</b> ย้ายเอกสารที่กรองไว้ไปยังที่เก็บอื่น</span></span></li>
+      <li><span><span lang="en">Click any document number to open its details and history. From there you can Lend out, Mark received, Edit borrower details or Mark as returned.</span><span lang="th">คลิกเลขเอกสารใดก็ได้เพื่อดูรายละเอียดและประวัติ จากตรงนั้นสั่ง Lend out, Mark received, Edit borrower details หรือ Mark as returned ได้</span></span></li>
+    </ul>
+    <p class="small" data-reveal><span lang="en">Received includes borrowed papers. Borrowed is part of Received, not extra.</span><span lang="th">Received นับรวมเอกสารที่ถูกยืมด้วย Borrowed เป็นส่วนหนึ่งของ Received ไม่ใช่ยอดเพิ่ม</span></p>
+  </div>
+</section>
+
+<!-- ============ HISTORY ============ -->
+<section class="sec" id="history" data-scene="helix" data-side="left" data-name="Activity & undo|ประวัติและย้อนกลับ">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 8½ · Activity</span><span lang="th">บทที่ 8½ · ประวัติการทำงาน</span></span>
+    <h2 data-reveal><span lang="en">The app never forgets.</span><span lang="th">โปรแกรมไม่เคยลืม</span></h2>
+    <p class="lead" data-reveal><span lang="en">The <b>Activity</b> page lists every scan, newest first: the time, what was typed, the result and whether it was scanned or typed.</span><span lang="th">หน้า <b>Activity</b> แสดงทุกการสแกน ล่าสุดอยู่บน: เวลา สิ่งที่พิมพ์ ผลลัพธ์ และว่าสแกนหรือพิมพ์เอง</span></p>
+    <div class="tbl" data-reveal><table><thead><tr><th>Time</th><th>Entered</th><th>Result</th><th>Mode</th></tr></thead><tbody id="simActivity"></tbody></table></div>
+    <div class="tip" data-reveal><b lang="en">Oops?</b><b lang="th">พลาด?</b><span><span lang="en">Press <b>Undo last</b> or <kbd>Ctrl+Z</kbd>. The entry stays in the list but crossed out, so the story stays honest. Filter the page by Received, Lent out, Returned, Warnings, Not in SAP or Undone.</span><span lang="th">กด <b>Undo last</b> หรือ <kbd>Ctrl+Z</kbd> รายการจะยังอยู่แต่ถูกขีดฆ่า เพื่อให้ประวัติตรงไปตรงมา กรองหน้านี้ได้ตาม Received, Lent out, Returned, Warnings, Not in SAP หรือ Undone</span></span></div>
+  </div>
+</section>
+
+<!-- ============ REQUESTS ============ -->
+<section class="sec" id="requests" data-scene="flow" data-side="right" data-name="Borrow requests|คำขอยืม">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 9 · Borrow requests</span><span lang="th">บทที่ 9 · คำขอยืมเอกสาร</span></span>
+    <h2 data-reveal><span lang="en">Coworkers can ask with a link.</span><span lang="th">เพื่อนร่วมงานขอยืมผ่านลิงก์ได้</span></h2>
+    <div class="flow" data-reveal>
+      <div class="fs"><span class="dot">1</span><div><span class="who"><span lang="en">Coworker</span><span lang="th">เพื่อนร่วมงาน</span></span><p><span lang="en">Opens the borrow link and picks papers that are <b>In storage</b>. Types name, department, how many days and why.</span><span lang="th">เปิดลิงก์ขอยืม เลือกเอกสารที่ <b>อยู่ในที่เก็บ</b> พิมพ์ชื่อ แผนก จำนวนวัน และเหตุผล</span></p></div></div>
+      <div class="fs"><span class="dot">2</span><div><span class="who"><span lang="en">The app</span><span lang="th">โปรแกรม</span></span><p><span lang="en">The request appears on the <b>Requests</b> page with a badge, and you get an email. It checks every minute while open, or click <b>Refresh</b>.</span><span lang="th">คำขอจะขึ้นในหน้า <b>Requests</b> พร้อมตัวเลขแจ้งเตือน และคุณได้รับอีเมล โปรแกรมเช็กทุกนาทีขณะเปิดอยู่ หรือกด <b>Refresh</b></span></p></div></div>
+      <div class="fs"><span class="dot">3</span><div><span class="who"><span lang="en">You</span><span lang="th">คุณ</span></span><p><span lang="en">Click <b>Approve &amp; lend</b>. The papers become <span class="chip t-purple">Borrowed</span>, due today + the days asked. Or <b>Reject</b> with a reason.</span><span lang="th">กด <b>Approve &amp; lend</b> เอกสารจะเป็น <span class="chip t-purple">Borrowed</span> กำหนดคืน = วันนี้ + จำนวนวันที่ขอ หรือกด <b>Reject</b> พร้อมเหตุผล</span></p></div></div>
+      <div class="fs"><span class="dot">4</span><div><span class="who"><span lang="en">You</span><span lang="th">คุณ</span></span><p><span lang="en">Tell the coworker the papers are ready. They do not get an automatic reply.</span><span lang="th">แจ้งเพื่อนร่วมงานว่าเอกสารพร้อมแล้ว ระบบไม่ได้ตอบกลับอัตโนมัติ</span></p></div></div>
+    </div>
+    <div class="tip" data-reveal><b lang="en">Setup once</b><b lang="th">ตั้งค่าครั้งเดียว</b><span><span lang="en">Follow <b>borrow-requests/SETUP.md</b> (about 10 minutes, a Google Sheet + Apps Script). Then in <b>Settings</b> paste the <b>Web app URL</b> and <b>Admin key</b>, click <b>Test connection</b>, then <b>Save settings</b>. Share the link from <b>Copy request link</b>, inside the company only.</span><span lang="th">ทำตาม <b>borrow-requests/SETUP.md</b> (ประมาณ 10 นาที ใช้ Google Sheet + Apps Script) จากนั้นใน <b>Settings</b> วาง <b>Web app URL</b> และ <b>Admin key</b> กด <b>Test connection</b> แล้ว <b>Save settings</b> แชร์ลิงก์จาก <b>Copy request link</b> ภายในบริษัทเท่านั้น</span></span></div>
+  </div>
+</section>
+
+<!-- ============ SAFE ============ -->
+<section class="sec" id="safe" data-scene="vault" data-side="left" data-name="Keep it safe|เก็บข้อมูลให้ปลอดภัย">
+  <div class="col">
+    <span class="eyebrow" data-reveal><span lang="en">Chapter 10 · Keep it safe</span><span lang="th">บทที่ 10 · เก็บข้อมูลให้ปลอดภัย</span></span>
+    <h2 data-reveal><span lang="en">Back up your notebook.</span><span lang="th">สำรองสมุดบันทึกของคุณ</span></h2>
+    <p class="lead" data-reveal><span lang="en">Your data lives inside this browser. Clean-up tools or IT policies can erase it. A backup file is your spare copy.</span><span lang="th">ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้ โปรแกรมล้างเครื่องหรือนโยบายของ IT อาจลบได้ ไฟล์สำรองคือสำเนาสำรองของคุณ</span></p>
+    <ul class="bul" data-reveal>
+      <li><span><span lang="en"><b>Backup</b> (Results page or Settings) downloads a <span class="mono">.json</span> file. Do it often and keep it on OneDrive.</span><span lang="th"><b>Backup</b> (หน้า Results หรือ Settings) ดาวน์โหลดไฟล์ <span class="mono">.json</span> ทำบ่อย ๆ และเก็บไว้ใน OneDrive</span></span></li>
+      <li><span><span lang="en"><b>Restore</b> loads a backup file, for example on a new computer.</span><span lang="th"><b>Restore</b> โหลดไฟล์สำรองกลับมา เช่น เมื่อย้ายเครื่องใหม่</span></span></li>
+      <li><span><span lang="en">If a red bar says <b>Saving failed</b>, click <b>Backup now</b> straight away.</span><span lang="th">ถ้ามีแถบสีแดงขึ้นว่า <b>Saving failed</b> ให้กด <b>Backup now</b> ทันที</span></span></li>
+      <li><span><span lang="en">Open the app in <b>one tab only</b>.</span><span lang="th">เปิดโปรแกรม <b>แท็บเดียวเท่านั้น</b></span></span></li>
+      <li><span><span lang="en"><b>Delete all data</b> in Settings really deletes everything. Back up first.</span><span lang="th"><b>Delete all data</b> ใน Settings จะลบทุกอย่างจริง ๆ สำรองข้อมูลก่อนเสมอ</span></span></li>
+    </ul>
+    <div class="card" style="padding:18px; display:grid; gap:8px" data-reveal>
+      <b style="font-size:14px"><span lang="en">Also in Settings (your initials, top right)</span><span lang="th">ใน Settings ยังมี (อักษรย่อชื่อคุณ มุมขวาบน)</span></b>
+      <div class="row" style="gap:6px">
+        <span class="chip t-grey"><span lang="en">Your name in history</span><span lang="th">ชื่อของคุณในประวัติ</span></span>
+        <span class="chip t-grey"><span lang="en">Workspace label</span><span lang="th">ชื่อพื้นที่ทำงาน</span></span>
+        <span class="chip t-grey"><span lang="en">Current fiscal year</span><span lang="th">ปีบัญชีปัจจุบัน</span></span>
+        <span class="chip t-grey"><span lang="en">Default loan days</span><span lang="th">จำนวนวันยืมเริ่มต้น</span></span>
+        <span class="chip t-grey"><span lang="en">Theme</span><span lang="th">ธีม</span></span>
+        <span class="chip t-grey"><span lang="en">Sound</span><span lang="th">เสียง</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KEYS ============ -->
+<section class="sec center" id="keys" data-scene="grid" data-side="center" data-name="Shortcuts|คีย์ลัด">
+  <div class="wide-col">
+    <div style="display:grid; gap:16px; justify-items:center">
+      <span class="eyebrow" data-reveal><span lang="en">Chapter 11 · Speedy hands</span><span lang="th">บทที่ 11 · มือไว</span></span>
+      <h2 data-reveal><span lang="en">Keyboard shortcuts.</span><span lang="th">คีย์ลัด</span></h2>
+      <p class="lead" data-reveal><span lang="en">Forgot one? Click the <b>?</b> button at the top of the app.</span><span lang="th">ลืม? กดปุ่ม <b>?</b> ด้านบนของโปรแกรม</span></p>
+    </div>
+    <div class="keys" data-reveal>
+      <div class="card keyc"><div class="ks"><kbd>Enter</kbd></div><p><span lang="en">Check the scanned or typed number.</span><span lang="th">ตรวจเลขที่สแกนหรือพิมพ์</span></p></div>
+      <div class="card keyc"><div class="ks"><kbd>Alt</kbd>+<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></div><p><span lang="en">Switch mode: Receive · Lend out · Return.</span><span lang="th">สลับโหมด: รับเข้า · ให้ยืม · รับคืน</span></p></div>
+      <div class="card keyc"><div class="ks"><kbd>1</kbd>…<kbd>9</kbd></div><p><span lang="en">Pick from the choice list when several papers match.</span><span lang="th">เลือกจากรายการ เมื่อมีเอกสารตรงกันหลายใบ</span></p></div>
+      <div class="card keyc"><div class="ks"><kbd>Esc</kbd></div><p><span lang="en">Cancel the choice list, clear the box or close a panel.</span><span lang="th">ยกเลิกรายการตัวเลือก ล้างช่อง หรือปิดหน้าต่าง</span></p></div>
+      <div class="card keyc"><div class="ks"><kbd>Ctrl</kbd>+<kbd>Z</kbd></div><p><span lang="en">Undo the last status change.</span><span lang="th">ย้อนการเปลี่ยนสถานะล่าสุด</span></p></div>
+      <div class="card keyc"><div class="ks"><kbd>Alt</kbd>+<kbd>C</kbd><kbd>R</kbd><kbd>A</kbd></div><p><span lang="en">Go to Check · Results · Activity.</span><span lang="th">ไปหน้า Check · Results · Activity</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="sec center" id="quiz" data-scene="swirl" data-side="center" data-name="Quiz|แบบทดสอบ">
+  <div class="wide-col">
+    <div style="display:grid; gap:16px; justify-items:center">
+      <span class="eyebrow" data-reveal><span lang="en">Chapter 12 · Show what you know</span><span lang="th">บทที่ 12 · มาลองทดสอบกัน</span></span>
+      <h2 data-reveal><span lang="en">Five quick questions.</span><span lang="th">ห้าคำถามสั้น ๆ</span></h2>
+    </div>
+    <div class="card quiz" id="quizBox" data-reveal></div>
+  </div>
+</section>
+
+<!-- ============ FINALE ============ -->
+<section class="sec center finale" id="go" data-scene="halo" data-side="center" data-name="Ready|พร้อมแล้ว">
+  <div class="wide-col" style="justify-items:center; align-items:center">
+    <span class="eyebrow" data-reveal><span lang="en">That’s it</span><span lang="th">จบแล้ว</span></span>
+    <h2 data-reveal><span lang="en">You’re ready.</span><span lang="th">คุณพร้อมแล้ว</span></h2>
+    <p class="lead" data-reveal style="margin:0 auto"><span lang="en">Import the list, pick a mode, scan, and read the color. Back up often.</span><span lang="th">นำเข้ารายการ เลือกโหมด สแกน แล้วอ่านสี และสำรองข้อมูลบ่อย ๆ</span></p>
+    <div class="row" data-reveal style="justify-content:center">
+      <a class="btn accent" href="document-check.html"><span lang="en">Open Check List Payment Voucher</span><span lang="th">เปิด Check List Payment Voucher</span> <span class="arr">↗</span></a>
+      <a class="btn ghost" href="#intro"><span lang="en">Back to top</span><span lang="th">กลับด้านบน</span> <span class="arr">↑</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>PV Field Guide · Check List Payment Voucher · AP</span>
+  <span lang="en">Practice data on this page is pretend and is never saved.</span><span lang="th">ข้อมูลฝึกในหน้านี้เป็นข้อมูลสมมติ และไม่ถูกบันทึก</span>
+</footer>
+
+<!-- =========================================================
+     Page logic (language, reveal, cursor, splitter, practice, quiz)
+     ========================================================= -->
+<script>
+"use strict";
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(_){} } };
+const emit = (type, detail) => window.dispatchEvent(new CustomEvent(type, {detail}));
+
+/* ---------- language ---------- */
+let LANG = store.get("pvg-lang") === "th" ? "th" : "en";
+const T = (en, th) => LANG === "th" ? th : en;
+function setLang(l){
+  LANG = l; document.documentElement.dataset.lang = l; document.documentElement.lang = l;
+  $$(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
+  store.set("pvg-lang", l);
+  renderSplit(); renderSim(); renderQuiz(); updateHud(true);
+}
+$$(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+
+/* ---------- preloader ---------- */
+(function loader(){
+  const el = $("#loader"), c = $("#loadCount");
+  if(REDUCED){ el.remove(); document.documentElement.style.setProperty("--boot","0s"); return; }
+  let n = 0, target = 0, done = false;
+  window.__loadProgress = p => { target = Math.max(target, p); };
+  const finish = () => { if(done) return; done = true; target = 100; };
+  window.__loadDone = finish;
+  setTimeout(finish, 3200);
+  (function tick(){
+    target = Math.min(100, Math.max(target, n + 0.4));
+    n += (target - n) * (done ? 0.2 : 0.12);
+    c.textContent = Math.round(n);
+    if(done && n > 98.6){ c.textContent = "100"; el.classList.add("done"); setTimeout(() => el.remove(), 1100); return; }
+    requestAnimationFrame(tick);
+  })();
+})();
+
+/* ---------- film grain ---------- */
+(function grain(){
+  const c = $("#grain"), x = c.getContext("2d"); c.width = 160; c.height = 160;
+  const img = x.createImageData(160,160);
+  for(let i=0;i<img.data.length;i+=4){ const v = Math.random()*255; img.data[i]=img.data[i+1]=img.data[i+2]=v; img.data[i+3]=255; }
+  x.putImageData(img,0,0);
+  c.style.width = "100vw"; c.style.height = "100vh"; c.style.imageRendering = "pixelated";
+  const url = c.toDataURL(); c.style.background = `url(${url})`; c.style.backgroundSize = "160px"; c.width = c.height = 1;
+})();
+
+/* ---------- reveal ---------- */
+(function reveal(){
+  const els = $$("[data-reveal]");
+  if(REDUCED || !("IntersectionObserver" in window)) return;
+  const vh = innerHeight;
+  els.forEach(el => { const r = el.getBoundingClientRect(); if(r.top > vh * 0.92){ el.classList.add("pre"); } el.classList.add("rv"); });
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if(e.isIntersecting){ const el = e.target; const sib = $$("[data-reveal].pre", el.parentElement).indexOf(el);
+      el.style.transitionDelay = Math.max(0, sib) * 70 + "ms"; el.classList.remove("pre"); io.unobserve(el); }
+  }), {rootMargin:"0px 0px -8% 0px"});
+  els.forEach(el => io.observe(el));
+})();
+
+/* ---------- cursor ---------- */
+(function cursor(){
+  if(!matchMedia("(pointer: fine)").matches) return;
+  const ring = $(".cursor"), dot = $(".cursor-dot");
+  let x = innerWidth/2, y = innerHeight/2, rx = x, ry = y, shown = false;
+  addEventListener("pointermove", e => { x = e.clientX; y = e.clientY; if(!shown){ shown = true; document.body.classList.add("has-cursor"); rx = x; ry = y; } }, {passive:true});
+  document.addEventListener("pointerleave", () => { document.body.classList.remove("has-cursor"); shown = false; });
+  addEventListener("pointerover", e => ring.classList.toggle("big", !!e.target.closest("a,button,input,.doc,label")));
+  (function loop(){ rx += (x - rx) * 0.18; ry += (y - ry) * 0.18;
+    ring.style.transform = `translate(${rx}px,${ry}px)`; dot.style.transform = `translate(${x}px,${y}px)`; requestAnimationFrame(loop); })();
+})();
+
+/* ---------- HUD + chapter nav ---------- */
+const SECS = $$("main > section");
+let hudIdx = -1;
+function updateHud(force){
+  const mid = innerHeight * 0.5; let idx = 0;
+  SECS.forEach((s, i) => { if(s.getBoundingClientRect().top < mid) idx = i; });
+  const max = document.documentElement.scrollHeight - innerHeight;
+  $("#hudBar").style.width = (max > 0 ? scrollY / max * 100 : 0) + "%";
+  if(idx === hudIdx && !force) return;
+  hudIdx = idx;
+  const nm = (SECS[idx].dataset.name || "").split("|");
+  $("#hudNum").textContent = String(idx).padStart(2,"0");
+  $("#hudName").textContent = LANG === "th" ? (nm[1] || nm[0]) : nm[0];
+  const id = SECS[idx].id;
+  $$(".chapters a").forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + id || (id === "signals" && a.getAttribute("href") === "#try") || (id === "history" && a.getAttribute("href") === "#results") || (id === "keys" && a.getAttribute("href") === "#safe")));
+}
+addEventListener("scroll", () => updateHud(false), {passive:true});
+
+/* ---------- journey stages ---------- */
+const journey = $("#journey");
+let lastStage = -1;
+function journeyProgress(){
+  const r = journey.getBoundingClientRect();
+  const span = r.height - innerHeight;
+  return span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+}
+window.__journeyStage = () => Math.min(3, journeyProgress() * 3.6);
+addEventListener("scroll", () => {
+  const s = Math.min(3, Math.floor(window.__journeyStage() + 0.35));
+  if(s !== lastStage){ lastStage = s; $$("#stages .stage").forEach((el, i) => el.classList.toggle("on", i === s)); }
+}, {passive:true});
+
+/* ---------- number splitter ---------- */
+const splitIn = $("#splitIn");
+function renderSplit(){
+  const digits = splitIn.value.replace(/\D/g, "");
+  const box = $("#splitDigits"), v = $("#splitVerdict");
+  let html = "", cls, msg, tone;
+  if(digits.length === 14){
+    html = [...digits].map((d,i) => (i === 10 ? `<span class="gap"></span>` : "") + `<span class="d ${i < 10 ? "dn" : "dy"}" style="animation-delay:${i*18}ms">${d}</span>`).join("");
+    tone = "t-green"; msg = T(`Exact match: document <b class="mono">${digits.slice(0,10)}</b> from fiscal year <b class="mono">${digits.slice(10)}</b>.`, `ตรงตัว: เอกสารเลขที่ <b class="mono">${digits.slice(0,10)}</b> ปีบัญชี <b class="mono">${digits.slice(10)}</b>`);
+  }else if(digits.length >= 1 && digits.length <= 10){
+    html = `<span class="d end" style="opacity:.35">…</span>` + [...digits].map((d,i) => `<span class="d end" style="animation-delay:${i*18}ms">${d}</span>`).join("");
+    tone = "t-amber"; msg = T(`Short search: finds papers whose number <b>ends with</b> <b class="mono">${digits}</b>, current fiscal year first. If several match, you pick one with keys 1–9.`, `ค้นหาแบบย่อ: หาเอกสารที่เลข<b>ลงท้ายด้วย</b> <b class="mono">${digits}</b> โดยดูปีบัญชีปัจจุบันก่อน ถ้าเจอหลายใบ ให้เลือกด้วยปุ่ม 1–9`);
+  }else if(digits.length){
+    html = [...digits].map((d,i) => `<span class="d bad" style="animation-delay:${i*18}ms">${d}</span>`).join("");
+    tone = "t-red"; msg = T(`${digits.length} digits is not allowed. Use all 14 digits, or up to 10 ending digits. The app will say <b>Check the number</b>.`, `${digits.length} หลักใช้ไม่ได้ ใช้ให้ครบ 14 หลัก หรือไม่เกิน 10 หลักท้าย โปรแกรมจะขึ้นว่า <b>Check the number</b>`);
+  }else{ tone = "t-grey"; msg = T("Type some digits.", "พิมพ์ตัวเลขสักหน่อย"); }
+  box.innerHTML = html; v.className = "verdict " + tone; v.innerHTML = msg;
+}
+splitIn.addEventListener("input", () => { renderSplit(); emit("pv:number", splitIn.value.replace(/\D/g,"")); });
+$$("[data-split]").forEach(b => b.addEventListener("click", () => { splitIn.value = b.dataset.split; renderSplit(); emit("pv:number", b.dataset.split); }));
+
+/* =========================================================
+   Practice scanner: a small copy of the real Check page rules
+   ========================================================= */
+const FY = "2026";
+const today = new Date();
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const addDays = n => { const d = new Date(today); d.setDate(d.getDate() + n); return iso(d); };
+function seed(){
+  return [
+    {no:"3500003058", fy:"2026", sup:"Siam Paper Co.", status:"missing"},
+    {no:"3500003121", fy:"2026", sup:"Bangkok Logistics", status:"missing"},
+    {no:"3500002058", fy:"2025", sup:"Thai Office Supply", status:"missing"},
+    {no:"3500004417", fy:"2026", sup:"Chonburi Steel", status:"received", loc:"Shelf A"},
+    {no:"3500005590", fy:"2026", sup:"Northern Foods", status:"borrowed", loan:{name:"Nok", dept:"Accounting", due:addDays(3)}},
+    {no:"3500006001", fy:"2026", sup:"Eastern Chemicals", status:"cancelled"},
+  ];
+}
+const SIM = { docs:seed(), mode:"receive", pending:null, undo:[], log:[], result:null, done:new Set() };
+const MISSIONS = [
+  ["receive", "Receive a missing paper", "รับเข้าเอกสารที่ยังไม่ได้รับ"],
+  ["duplicate", "Scan the same paper again", "สแกนเอกสารใบเดิมซ้ำ"],
+  ["choice", "Type only 058 and pick from the list", "พิมพ์แค่ 058 แล้วเลือกจากรายการ"],
+  ["lend", "Lend a paper to someone", "ให้ใครสักคนยืมเอกสาร"],
+  ["return", "Return a borrowed paper", "รับคืนเอกสารที่ถูกยืม"],
+  ["notfound", "Type a number that is not in SAP", "พิมพ์เลขที่ไม่มีใน SAP"],
+  ["undo", "Undo your last change", "ย้อนการเปลี่ยนแปลงล่าสุด"],
+];
+const simIn = $("#simIn");
+const key = d => d.no + d.fy;
+const STATUS = {
+  missing:{l:"Missing", t:"t-grey"}, received:{l:"In storage", t:"t-green"}, borrowed:{l:"Borrowed", t:"t-purple"}, cancelled:{l:"Cancelled", t:"t-red"}
+};
+const TONE = {green:"t-green", amber:"t-amber", red:"t-red", purple:"t-purple", grey:"t-grey"};
+function mission(id){ if(!SIM.done.has(id)){ SIM.done.add(id); emit("pv:mission", {id, all: SIM.done.size === MISSIONS.length}); } }
+function log(input, result, tone, d){
+  SIM.log.unshift({t:new Date(), input, result, tone, mode:SIM.mode, key:d ? key(d) : "", undone:false});
+  SIM.log = SIM.log.slice(0, 30);
+}
+function show(tone, title, msg, sub, d){
+  SIM.result = {tone, title, msg, sub};
+  emit("pv:scan", {tone, title, status: d ? d.status : null, mode: SIM.mode});
+  playBeep(tone);
+}
+function process(raw){
+  const input = String(raw || "").trim(), digits = input.replace(/\D/g, "");
+  if(!digits) return;
+  SIM.pending = null;
+  if(SIM.mode === "lend" && (!$("#simName").value.trim() || !$("#simDept").value.trim())){
+    show("amber", T("Borrower details needed","ต้องกรอกข้อมูลผู้ยืม"), T("Fill in Borrower name and Department first.","กรอกชื่อผู้ยืมและแผนกก่อน"), T("They stay filled in for the next scans.","ข้อมูลจะค้างไว้สำหรับการสแกนครั้งต่อไป"));
+    $(SIM.mode === "lend" && !$("#simName").value.trim() ? "#simName" : "#simDept").focus(); renderSim(); return;
+  }
+  let matches;
+  if(digits.length === 14) matches = SIM.docs.filter(d => key(d) === digits);
+  else if(digits.length <= 10){ const all = SIM.docs.filter(d => d.no.endsWith(digits)); const cur = all.filter(d => d.fy === FY); matches = cur.length ? cur : all; }
+  else{
+    log(input, "Check the number", "red");
+    show("red", T("Check the number","ตรวจตัวเลขอีกครั้ง"), T(`“${input}” has ${digits.length} digits.`, `“${input}” มี ${digits.length} หลัก`), T("Enter all 14 digits, or up to 10 digits of the document number.","ใส่ให้ครบ 14 หลัก หรือไม่เกิน 10 หลักของเลขเอกสาร"));
+    renderSim(); return;
+  }
+  // practice list is tiny, so show the choice list whenever both years match (the real app prefers the current year)
+  if(digits.length <= 10){ const both = SIM.docs.filter(d => d.no.endsWith(digits)); if(both.length > 1 && both.length <= 9) matches = both; }
+  if(!matches.length){
+    log(input, "Not in SAP list", "red"); mission("notfound");
+    show("red", T("Not in SAP list","ไม่พบในรายการ SAP"), T("This number does not match any document in the loaded SAP list.","เลขนี้ไม่ตรงกับเอกสารใดในรายการ SAP"), T("Check the barcode. The entry is saved under Not in SAP for follow-up.","ตรวจบาร์โค้ด รายการนี้ถูกเก็บไว้ใน Not in SAP เพื่อติดตาม"));
+    renderSim(); return;
+  }
+  if(matches.length > 1){ SIM.pending = {matches, input}; SIM.result = null; emit("pv:scan", {tone:"choice"}); playBeep("choice"); renderSim(); return; }
+  act(matches[0], input);
+}
+function act(d, input, viaChoice){
+  const before = {status:d.status, loan:d.loan ? {...d.loan} : null, loc:d.loc};
+  const change = (res, tone) => { SIM.undo.push({d, before, logRef:SIM.log[0]}); };
+  if(viaChoice) mission("choice");
+  if(d.status === "cancelled"){
+    log(input, "Document cancelled", "red", d);
+    show("red", T("Document cancelled","เอกสารถูกยกเลิก"), T(`Cancelled in SAP by a reversal entry.`, "ถูกยกเลิกใน SAP ด้วยรายการกลับรายการ"), T("Not stored. Cancelled documents are not filed. No change made.","ไม่รับเข้าเก็บ เอกสารที่ถูกยกเลิกไม่ต้องจัดเก็บ ไม่มีการเปลี่ยนแปลง"), d);
+  }else if(SIM.mode === "receive"){
+    if(d.status === "missing"){
+      d.status = "received"; d.loc = "Shelf A"; log(input, "Received", "green", d); change(); mission("receive");
+      show("green", T("Received","รับเข้าแล้ว"), T("Received into storage · Shelf A","รับเข้าที่เก็บ · Shelf A"), T(`Document ${d.no} · FY ${d.fy} is now in storage.`, `เอกสาร ${d.no} · ปี ${d.fy} อยู่ในที่เก็บแล้ว`), d);
+    }else if(d.status === "received"){
+      log(input, "Already received", "amber", d); mission("duplicate");
+      show("amber", T("Already received","รับเข้าแล้วก่อนหน้านี้"), T("Duplicate scan: this document is already in storage at Shelf A.","สแกนซ้ำ: เอกสารนี้อยู่ในที่เก็บที่ Shelf A แล้ว"), T("Nothing changed.","ไม่มีอะไรเปลี่ยน"), d);
+    }else{
+      log(input, "Already borrowed", "amber", d);
+      show("amber", T("Already borrowed","ถูกยืมอยู่"), T(`Received, but currently borrowed by ${d.loan.name} from ${d.loan.dept}.`, `รับเข้าแล้ว แต่ตอนนี้ ${d.loan.name} จาก ${d.loan.dept} ยืมอยู่`), T("If the paper is in your hand, switch to Return (Alt+3) and scan it.","ถ้าเอกสารอยู่ในมือคุณ ให้สลับไปโหมด Return (Alt+3) แล้วสแกน"), d);
+    }
+  }else if(SIM.mode === "lend"){
+    if(d.status === "received"){
+      d.status = "borrowed"; d.loan = {name:$("#simName").value.trim(), dept:$("#simDept").value.trim(), due:addDays(7)};
+      log(input, "Lent out", "purple", d); change(); mission("lend");
+      show("purple", T("Lent out","ให้ยืมแล้ว"), T(`Lent to ${d.loan.name} · ${d.loan.dept}`, `ให้ ${d.loan.name} · ${d.loan.dept} ยืมแล้ว`), T(`Due back ${d.loan.due}.`, `กำหนดคืน ${d.loan.due}`), d);
+    }else if(d.status === "borrowed"){
+      log(input, "Already borrowed", "amber", d);
+      show("amber", T("Already borrowed","ถูกยืมอยู่"), T(`${d.loan.name} from ${d.loan.dept} still has it.`, `${d.loan.name} จาก ${d.loan.dept} ยังยืมอยู่`), T("A paper can only be lent to one person at a time.","เอกสารหนึ่งใบให้ยืมได้ทีละคน"), d);
+    }else{
+      log(input, "Not received yet", "amber", d);
+      show("amber", T("Not received yet","ยังไม่ได้รับเข้า"), T("Only documents in storage can be lent.","ให้ยืมได้เฉพาะเอกสารที่อยู่ในที่เก็บ"), T("Receive it first (Alt+1), then lend it.","รับเข้าก่อน (Alt+1) แล้วจึงให้ยืม"), d);
+    }
+  }else{
+    if(d.status === "borrowed"){
+      const L = d.loan; d.status = "received"; d.loan = null;
+      log(input, "Returned", "green", d); change(); mission("return");
+      show("green", T("Returned","รับคืนแล้ว"), T("Returned to storage","คืนเข้าที่เก็บแล้ว"), T(`Borrowed by ${L.name} (${L.dept}).`, `ผู้ยืม ${L.name} (${L.dept})`), d);
+    }else if(d.status === "received"){
+      log(input, "Not on loan", "amber", d);
+      show("amber", T("Not on loan","ไม่ได้ถูกยืม"), T("This document is already in storage.","เอกสารนี้อยู่ในที่เก็บอยู่แล้ว"), T("There is no open loan to close. No change made.","ไม่มีการยืมให้ปิด ไม่มีการเปลี่ยนแปลง"), d);
+    }else{
+      log(input, "Not received yet", "amber", d);
+      show("amber", T("Not received yet","ยังไม่ได้รับเข้า"), T("This document was never received, so it cannot be returned.","เอกสารนี้ไม่เคยรับเข้า จึงรับคืนไม่ได้"), T("Switch to Receive (Alt+1) if the paper is here.","ถ้าเอกสารอยู่ตรงนี้ ให้สลับไปโหมด Receive (Alt+1)"), d);
+    }
+  }
+  renderSim();
+}
+function undo(){
+  const u = SIM.undo.pop();
+  if(!u){ show("grey", T("Nothing to undo","ไม่มีอะไรให้ย้อน"), T("Undo only reverses status changes.","Undo ย้อนได้เฉพาะการเปลี่ยนสถานะ"), ""); renderSim(); return; }
+  u.d.status = u.before.status; u.d.loan = u.before.loan; u.d.loc = u.before.loc;
+  if(u.logRef) u.logRef.undone = true;
+  mission("undo");
+  show("grey", T("Undone","ย้อนกลับแล้ว"), T(`${u.d.no} is back to ${STATUS[u.d.status].l}.`, `${u.d.no} กลับเป็น ${STATUS[u.d.status].l}`), T("The entry stays in the list, crossed out.","รายการยังอยู่ แต่ถูกขีดฆ่า"));
+  renderSim();
+}
+function setMode(m){
+  SIM.mode = m; SIM.pending = null;
+  $$("#play .tabs button").forEach(b => b.setAttribute("aria-checked", String(b.dataset.m === m)));
+  $("#lendBox").hidden = m !== "lend";
+  emit("pv:mode", m);
+  renderSim(); simIn.focus({preventScroll:true});
+}
+function renderSim(){
+  if(!simIn) return;
+  $("#simGo").textContent = {receive:T("Receive","รับเข้า"), lend:T("Lend","ให้ยืม"), return:T("Return","รับคืน")}[SIM.mode];
+  simIn.placeholder = T("Scan or type document number", "สแกนหรือพิมพ์เลขที่เอกสาร");
+  const R = $("#simResult");
+  if(SIM.pending){
+    R.innerHTML = `<div class="result t-amber"><b>${T("Pick one","เลือกหนึ่งใบ")}</b><span>${T(`${SIM.pending.matches.length} documents end with ${esc(SIM.pending.input)}. Press 1–${SIM.pending.matches.length} or click.`, `มี ${SIM.pending.matches.length} เอกสารลงท้ายด้วย ${esc(SIM.pending.input)} กด 1–${SIM.pending.matches.length} หรือคลิก`)}</span>
+      <div class="choices">${SIM.pending.matches.map((d,i) => `<button type="button" data-pick="${i}"><kbd>${i+1}</kbd><span class="mono">${d.no} <span class="muted">/ ${d.fy}</span></span><span class="small">${esc(d.sup)}</span></button>`).join("")}</div>
+      <button class="linkbtn" type="button" data-pick="cancel" style="justify-self:start">${T("Cancel (Esc)","ยกเลิก (Esc)")}</button></div>`;
+  }else if(SIM.result){
+    const r = SIM.result;
+    R.innerHTML = `<div class="result ${TONE[r.tone]}"><b>${esc(r.title)}</b><span>${esc(r.msg)}</span>${r.sub ? `<span class="sub">${esc(r.sub)}</span>` : ""}</div>`;
+  }else{
+    R.innerHTML = `<div class="result idle"><b>${T("Waiting for a scan","รอการสแกน")}</b><span>${T("Click a paper on the right, or type 3058 and press Enter.","คลิกเอกสารทางขวา หรือพิมพ์ 3058 แล้วกด Enter")}</span></div>`;
+  }
+  $("#simDocs").innerHTML = SIM.docs.map(d => { const s = STATUS[d.status];
+    const meta = d.status === "borrowed" ? `${d.loan.name} · ${d.loan.dept} · ${T("due","คืน")} ${d.loan.due}` : d.status === "received" ? `${esc(d.sup)} · ${d.loc || "Shelf A"}` : esc(d.sup);
+    return `<button type="button" class="doc" data-fill="${key(d)}" title="${T("Click to fill in this number","คลิกเพื่อใส่เลขนี้")}"><span class="no">${d.no}<i>${d.fy}</i></span><span class="meta">${esc(meta)}</span><span class="chip ${s.t}">${s.l}</span></button>`; }).join("");
+  $("#simRecent").innerHTML = SIM.log.length ? SIM.log.slice(0,8).map(e => `<div class="e ${e.undone ? "undone" : ""}"><span class="mono small">${e.t.toTimeString().slice(0,8)}</span><span class="mono">${esc(e.input)}</span><span class="chip ${TONE[e.tone]}">${esc(e.result)}</span></div>`).join("") : `<span class="small">${T("No scans yet.","ยังไม่มีการสแกน")}</span>`;
+  $("#simActivity").innerHTML = SIM.log.length ? SIM.log.slice(0,6).map(e => `<tr class="${e.undone ? "undone" : ""}"><td class="mono">${e.t.toTimeString().slice(0,5)}</td><td class="mono">${esc(e.input)}</td><td><span class="chip ${TONE[e.tone]}">${esc(e.result)}</span></td><td>${{receive:"Receive",lend:"Lend out",return:"Return"}[e.mode]}</td></tr>`).join("")
+    : `<tr><td colspan="4" class="small">${T("Your practice scans will appear here. Try a few in chapter 6.","การสแกนฝึกของคุณจะแสดงที่นี่ ลองสแกนในบทที่ 6")}</td></tr>`;
+  // stats
+  const c = {total:SIM.docs.length, received:0, missing:0, borrowed:0, cancelled:0};
+  SIM.docs.forEach(d => { if(d.status === "received" || d.status === "borrowed") c.received++; if(d.status === "missing") c.missing++; if(d.status === "borrowed") c.borrowed++; if(d.status === "cancelled") c.cancelled++; });
+  const notIn = SIM.log.filter(e => e.result === "Not in SAP list" && !e.undone).length;
+  const pct = Math.round(c.received / Math.max(1, c.total - c.cancelled) * 100);
+  const st = (k, n, s, tone) => `<div class="stat"><span class="k">${k}</span><span class="n" style="color:var(--${tone})">${n}</span><span class="s">${s}</span></div>`;
+  $("#simStats").innerHTML = st("Total documents", c.total, T("SAP register","รายการ SAP"), "blue") + st("Received", c.received, T(`${pct}% done`, `เสร็จ ${pct}%`), "green")
+    + st("Missing", c.missing, T("In SAP, not received","อยู่ใน SAP ยังไม่ได้รับ"), "amber") + st("Borrowed", c.borrowed, T("Part of received","รวมอยู่ใน Received"), "purple")
+    + st("Cancelled", c.cancelled, T("Reversed in SAP","กลับรายการใน SAP"), "red") + st("Not in SAP", notIn, T("Scanned, no match","สแกนแล้วไม่พบ"), "grey");
+  emit("pv:counts", {...c, notIn});
+  // missions
+  $("#missions").innerHTML = MISSIONS.map(([id, en, th]) => `<li class="${SIM.done.has(id) ? "ok" : ""}">${LANG === "th" ? th : en}</li>`).join("");
+  $("#missionCount").textContent = `${SIM.done.size} / ${MISSIONS.length}`;
+  $("#missionBar").style.width = SIM.done.size / MISSIONS.length * 100 + "%";
+}
+$("#simForm").addEventListener("submit", e => { e.preventDefault(); const v = simIn.value; simIn.value = ""; process(v); });
+$$("#play .tabs button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.m)));
+$("#simDocs").addEventListener("click", e => { const b = e.target.closest("[data-fill]"); if(!b) return; simIn.value = b.dataset.fill; simIn.focus({preventScroll:true}); });
+$("#simResult").addEventListener("click", e => { const b = e.target.closest("[data-pick]"); if(!b || !SIM.pending) return;
+  if(b.dataset.pick === "cancel"){ SIM.pending = null; show("grey", T("Choice cancelled","ยกเลิกการเลือก"), T("Nothing was changed. Ready for the next scan.","ไม่มีอะไรเปลี่ยน พร้อมสแกนใบถัดไป"), ""); renderSim(); return; }
+  const p = SIM.pending; SIM.pending = null; act(p.matches[+b.dataset.pick], p.input, true); simIn.focus({preventScroll:true}); });
+$("#simUndo").addEventListener("click", undo);
+$("#simReset").addEventListener("click", () => { SIM.docs = seed(); SIM.log = []; SIM.undo = []; SIM.pending = null; SIM.result = null; SIM.done = new Set(); renderSim(); emit("pv:reset"); });
+$("#play").addEventListener("keydown", e => {
+  if(e.altKey && ["1","2","3"].includes(e.key)){ e.preventDefault(); setMode(["receive","lend","return"][+e.key - 1]); return; }
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && e.target === simIn && !simIn.value){ e.preventDefault(); undo(); return; }
+  if(SIM.pending && e.target === simIn && !simIn.value && /^[1-9]$/.test(e.key)){ const d = SIM.pending.matches[+e.key - 1]; if(d){ e.preventDefault(); const p = SIM.pending; SIM.pending = null; act(d, p.input, true); } return; }
+  if(e.key === "Escape"){ if(SIM.pending){ SIM.pending = null; show("grey", T("Choice cancelled","ยกเลิกการเลือก"), T("Nothing was changed. Ready for the next scan.","ไม่มีอะไรเปลี่ยน พร้อมสแกนใบถัดไป"), ""); renderSim(); } else simIn.value = ""; }
+});
+
+/* ---------- little beeps (start only after a click, like the real app) ---------- */
+let AC = null;
+function playBeep(tone){
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = {green:[880,1320], purple:[660,990], amber:[520,520], red:[220,180], grey:[440], choice:[700,800,900]}[tone] || [600];
+    notes.forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = tone === "red" ? "square" : "sine"; o.frequency.value = f;
+      const t0 = AC.currentTime + i * 0.09; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(tone === "red" ? 0.05 : 0.12, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+      o.connect(g).connect(AC.destination); o.start(t0); o.stop(t0 + 0.18); });
+  }catch(_){}
+}
+
+/* ---------- quiz ---------- */
+const QUIZ = [
+  {q:["You scan a paper that is already in the box. What do you see?","คุณสแกนเอกสารที่อยู่ในกล่องอยู่แล้ว จะเห็นอะไร?"],
+   a:[["Green: Received","เขียว: Received"],["Amber: Already received","ส้ม: Already received"],["Red: Not in SAP list","แดง: Not in SAP list"]], ok:1,
+   why:["Amber means look again. The app tells you it is a duplicate and changes nothing.","สีส้มแปลว่าให้ตรวจอีกครั้ง โปรแกรมบอกว่าสแกนซ้ำ และไม่เปลี่ยนอะไร"]},
+  {q:["A coworker wants to borrow a paper. Which mode do you use?","เพื่อนร่วมงานอยากยืมเอกสาร ใช้โหมดไหน?"],
+   a:[["Receive (Alt+1)","Receive (Alt+1)"],["Lend out (Alt+2)","Lend out (Alt+2)"],["Return (Alt+3)","Return (Alt+3)"]], ok:1,
+   why:["Lend out. Fill in their name and department first, then scan.","Lend out กรอกชื่อและแผนกก่อน แล้วจึงสแกน"]},
+  {q:["How many digits are in a full document number?","เลขที่เอกสารแบบเต็มมีกี่หลัก?"],
+   a:[["10","10"],["14","14"],["4","4"]], ok:1,
+   why:["14: ten for the document number and four for the fiscal year.","14 หลัก: สิบหลักคือเลขเอกสาร และสี่หลักคือปีบัญชี"]},
+  {q:["A paper is in the SAP list but nobody has scanned it yet. Its status is…","เอกสารอยู่ในรายการ SAP แต่ยังไม่มีใครสแกน สถานะคือ…"],
+   a:[["Missing","Missing"],["Borrowed","Borrowed"],["Cancelled","Cancelled"]], ok:0,
+   why:["Missing. It is waiting for its beep.","Missing รอการสแกนอยู่"]},
+  {q:["What keeps your data safe if the browser gets cleaned?","อะไรช่วยให้ข้อมูลปลอดภัยถ้าเบราว์เซอร์ถูกล้าง?"],
+   a:[["Opening the app in many tabs","เปิดโปรแกรมหลายแท็บ"],["A Backup .json file on OneDrive","ไฟล์ Backup .json ใน OneDrive"],["Delete all data","Delete all data"]], ok:1,
+   why:["Back up often and keep the file on OneDrive. Restore brings it back.","สำรองข้อมูลบ่อย ๆ และเก็บไฟล์ไว้ใน OneDrive ใช้ Restore เพื่อดึงกลับมา"]},
+];
+const QZ = {i:0, answers:[]};
+function renderQuiz(){
+  const box = $("#quizBox"); const L = LANG === "th" ? 1 : 0;
+  const dots = `<div class="dots">${QUIZ.map((_, i) => `<i class="${QZ.answers[i] === undefined ? (i === QZ.i ? "cur" : "") : QZ.answers[i] ? "ok" : "no"}"></i>`).join("")}</div>`;
+  if(QZ.i >= QUIZ.length){
+    const score = QZ.answers.filter(Boolean).length;
+    box.innerHTML = `<div class="q">${score === QUIZ.length ? T("Perfect score! You are a document keeper.","เต็ม! คุณคือผู้ดูแลเอกสารตัวจริง") : T(`You got ${score} of ${QUIZ.length}.`, `คุณได้ ${score} จาก ${QUIZ.length}`)}</div>
+      <p class="muted">${score === QUIZ.length ? T("Open the app and try it with the real SAP list.","เปิดโปรแกรมแล้วลองกับรายการ SAP จริงได้เลย") : T("Scroll up to the chapter you missed, then try again.","เลื่อนขึ้นไปทบทวนบทที่พลาด แล้วลองใหม่")}</p>
+      <div class="qfoot">${dots}<button class="btn" type="button" id="qAgain">${T("Try again","ลองอีกครั้ง")} <span class="arr">↺</span></button></div>`;
+    $("#qAgain").onclick = () => { QZ.i = 0; QZ.answers = []; renderQuiz(); };
+    if(score === QUIZ.length) emit("pv:celebrate");
+    return;
+  }
+  const q = QUIZ[QZ.i], answered = QZ.answers[QZ.i] !== undefined;
+  box.innerHTML = `<span class="small">${T("Question","คำถามที่")} ${QZ.i + 1} / ${QUIZ.length}</span><div class="q">${esc(q.q[L])}</div>
+    <div class="opts">${q.a.map((a, i) => `<button type="button" data-a="${i}" ${answered ? "disabled" : ""} class="${answered ? (i === q.ok ? "right" : (i === QZ.pick ? "wrong" : "")) : ""}"><span class="l">${"ABC"[i]}</span>${esc(a[L])}</button>`).join("")}</div>
+    ${answered ? `<div class="explain">${QZ.answers[QZ.i] ? "✓ " : "✗ "}${esc(q.why[L])}</div>` : ""}
+    <div class="qfoot">${dots}${answered ? `<button class="btn" type="button" id="qNext">${QZ.i === QUIZ.length - 1 ? T("See my score","ดูคะแนน") : T("Next","ข้อต่อไป")} <span class="arr">→</span></button>` : ""}</div>`;
+  $$("#quizBox [data-a]").forEach(b => b.onclick = () => { QZ.pick = +b.dataset.a; QZ.answers[QZ.i] = QZ.pick === q.ok; playBeep(QZ.answers[QZ.i] ? "green" : "red"); emit("pv:scan", {tone: QZ.answers[QZ.i] ? "green" : "red"}); renderQuiz(); });
+  const nx = $("#qNext"); if(nx) nx.onclick = () => { QZ.i++; renderQuiz(); };
+}
+
+/* ---------- boot ---------- */
+setLang(LANG);
+renderSplit();
+</script>
+
+<!-- =========================================================
+     3D stage: ~46 paper vouchers that rearrange per chapter
+     ========================================================= -->
+<script type="module">
+import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const progress = p => window.__loadProgress && window.__loadProgress(p);
+progress(30);
+
+let renderer;
+try{
+  renderer = new THREE.WebGLRenderer({canvas:document.getElementById("stage"), antialias:true, alpha:true, powerPreference:"high-performance"});
+}catch(err){ document.documentElement.classList.add("no-webgl"); window.__loadDone && window.__loadDone(); throw err; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(35, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 0, 16);
+
+const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(4, 6, 8); scene.add(key);
+const rim = new THREE.DirectionalLight(0x8ea0ff, 1.2); rim.position.set(-6, -2, -4); scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8890b0, 0.6));
+const flash = new THREE.PointLight(0xffffff, 0, 14, 1.6); flash.position.set(0, 0.5, 3); scene.add(flash);
+
+const world = new THREE.Group(); scene.add(world);
+
+/* ---- colors (semantic statuses, lit in 3D) ---- */
+const COL = {
+  paper:new THREE.Color("#ffffff"), grey:new THREE.Color("#b9c0cf"), green:new THREE.Color("#5fd39c"), amber:new THREE.Color("#f5b54a"),
+  red:new THREE.Color("#f07a7a"), purple:new THREE.Color("#a291ff"), blue:new THREE.Color("#7fa8ff"), accent:new THREE.Color("#5b6cff")
+};
+const TONE_COL = {green:COL.green, amber:COL.amber, red:COL.red, purple:COL.purple, grey:COL.blue, choice:COL.amber};
+
+/* ---- paper textures ---- */
+await document.fonts.ready.catch(()=>{});
+progress(55);
+function paperTexture(no, fy, hero){
+  const W = 512, H = 724, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  x.fillStyle = "#fbfbfd"; x.fillRect(0,0,W,H);
+  x.fillStyle = "#1a2040"; x.font = "600 30px Unbounded, sans-serif"; x.fillText("PAYMENT", 44, 82); x.fillText("VOUCHER", 44, 120);
+  x.fillStyle = "#5b6cff"; x.fillRect(44, 140, 70, 6);
+  x.fillStyle = "#8a92a8"; x.font = "500 18px Figtree, sans-serif"; x.fillText("P.S.P. · AP Document", 44, 182);
+  x.strokeStyle = "#dfe3ee"; x.lineWidth = 2;
+  for(let i=0;i<9;i++){ const y = 238 + i*38; x.beginPath(); x.moveTo(44, y); x.lineTo(W-44, y); x.stroke();
+    x.fillStyle = "#c7ccd9"; x.fillRect(44, y - 22, 120 + ((i*73)%180), 9); x.fillRect(W - 44 - 80 - ((i*41)%40), y - 22, 80 + ((i*41)%40), 9); }
+  // barcode
+  let bx = 44; const by = H - 210;
+  x.fillStyle = "#121733";
+  for(let i=0; bx < W - 44; i++){ const w = 2 + ((i*7 + no.charCodeAt(i % no.length)) % 4) * 2; if(i % 2 === 0) x.fillRect(bx, by, w, 96); bx += w + 2; }
+  x.font = "700 " + (hero ? 34 : 30) + "px 'JetBrains Mono', monospace";
+  if(hero){
+    x.fillStyle = "#2463a9"; x.fillText(no, 44, H - 70);
+    const w = x.measureText(no).width; x.fillStyle = "#1d7f54"; x.fillText(" " + fy, 44 + w, H - 70);
+    x.fillStyle = "#2463a9"; x.fillRect(44, H - 56, w, 5); x.fillStyle = "#1d7f54"; x.fillRect(44 + w + x.measureText(" ").width, H - 56, x.measureText(fy).width, 5);
+  }else{ x.fillStyle = "#121733"; x.fillText(no + fy, 44, H - 70); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const NUMS = ["3500003058","3500003121","3500004417","3500005590","3500006001","3500002058","3500007310","3500008842"];
+const TEX = NUMS.map(n => paperTexture(n, "2026", false));
+const HERO_TEX = paperTexture("3500003058", "2026", true);
+progress(75);
+
+/* ---- papers ---- */
+const N = 46;
+const geo = new RoundedBoxGeometry(1, 1.414, 0.03, 2, 0.014);
+const papers = [];
+const hash = (i, k) => { const s = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return s - Math.floor(s); };
+for(let i=0;i<N;i++){
+  const mat = new THREE.MeshPhysicalMaterial({map: i === 0 ? HERO_TEX : TEX[i % TEX.length], roughness:.48, metalness:0, clearcoat:.5, clearcoatRoughness:.35, sheen:.4});
+  const m = new THREE.Mesh(geo, mat); world.add(m);
+  const p = {mesh:m, mat, pos:new THREE.Vector3((hash(i,1)-.5)*30, (hash(i,2)-.5)*20, -10), rot:new THREE.Vector3(), s:.01,
+    col:new THREE.Color(1,1,1), kick:new THREE.Vector3(), kickV:new THREE.Vector3(), spin:0};
+  papers.push(p);
+}
+
+/* ---- props: storage box, people, vault ---- */
+function makeBox(){
+  const g = new THREE.Group();
+  const m = new THREE.MeshPhysicalMaterial({color:"#c89a63", roughness:.75, clearcoat:.15});
+  const W = 3.2, D = 1.9, H = 1.3, T = .08;
+  const add = (w,h,d,x,y,z) => { const b = new THREE.Mesh(new RoundedBoxGeometry(w,h,d,2,.03), m); b.position.set(x,y,z); g.add(b); };
+  add(W, T, D, 0, -H/2, 0); add(W, H, T, 0, 0, D/2); add(W, H, T, 0, 0, -D/2); add(T, H, D, W/2, 0, 0); add(T, H, D, -W/2, 0, 0);
+  const label = new THREE.Mesh(new THREE.PlaneGeometry(1.3,.42), new THREE.MeshBasicMaterial({color:"#ffffff"}));
+  label.position.set(0, 0, D/2 + .05); g.add(label);
+  return g;
+}
+const box = makeBox(); world.add(box);
+function makePerson(color){
+  const g = new THREE.Group();
+  const m = new THREE.MeshPhysicalMaterial({color, roughness:.35, clearcoat:.8});
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(.55, .9, 8, 24), m); body.position.y = -.4; g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.45, 32, 24), m); head.position.y = .85; g.add(head);
+  return g;
+}
+const personA = makePerson("#a291ff"); world.add(personA);
+const personB = makePerson("#7fa8ff"); world.add(personB);
+const vault = new THREE.Mesh(new THREE.IcosahedronGeometry(1.25, 1), new THREE.MeshPhysicalMaterial({color:"#5b6cff", roughness:.15, metalness:.1, transmission:.6, thickness:1, clearcoat:1}));
+world.add(vault);
+const beam = new THREE.Mesh(new THREE.PlaneGeometry(2.6, .05), new THREE.MeshBasicMaterial({color:"#ff4d6d", transparent:true, opacity:.9}));
+world.add(beam);
+const cloud = new THREE.Group();
+[[0,0,1],[-.7,-.1,.75],[.75,-.1,.8],[.3,.35,.7]].forEach(([x,y,r]) => { const s = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 24), new THREE.MeshPhysicalMaterial({color:"#e8ecff", roughness:.6, clearcoat:.3})); s.position.set(x,y,0); cloud.add(s); });
+world.add(cloud);
+const props = {box, personA, personB, vault, beam, cloud};
+const propVis = {}; for(const k in props){ propVis[k] = 0; props[k].scale.setScalar(.001); }
+
+/* ---- formations: each returns a target per paper ---- */
+const TAU = Math.PI * 2, GA = Math.PI * (3 - Math.sqrt(5));
+const tg = () => ({x:0,y:0,z:0, rx:0,ry:0,rz:0, s:1, c:"paper"});
+let stageParam = 0, counts = {total:6, received:2, missing:3, borrowed:1, cancelled:1};
+const F = {
+  swirl(i, t, o){ const a = i * GA + t * .07, r = 2.3 + (i % 7) * .48;
+    o.x = Math.cos(a) * r * 1.15; o.z = Math.sin(a) * r - 1.5; o.y = (hash(i,3) - .5) * 5.4 + Math.sin(t * .5 + i) * .25;
+    o.rx = Math.sin(t * .3 + i) * .6; o.ry = a + .8; o.rz = Math.sin(i * 1.3) * .6; o.s = .62 + hash(i,4) * .4;
+    o.c = i === 0 ? "paper" : i % 9 === 0 ? "green" : i % 11 === 0 ? "purple" : i % 13 === 0 ? "amber" : "paper"; },
+  grid(i, t, o){ const col = i % 8, row = Math.floor(i / 8);
+    o.x = (col - 3.5) * .86; o.y = (2.5 - row) * 1.12; o.z = Math.sin(t * 1.1 + col * .55 + row * .4) * .22;
+    o.rx = Math.sin(t + col * .5) * .12 - .1; o.ry = -.28 + Math.cos(t * .8 + row) * .08; o.rz = 0; o.s = .6;
+    o.c = (i * 7) % 10 < 4 ? "green" : (i * 3) % 17 === 0 ? "purple" : "grey"; },
+  rain(i, t, o){ const col = i % 8, row = Math.floor(i / 8);
+    const fall = ((t * .35 + hash(i, 6)) % 1);
+    if(i % 3 === 0){ o.x = -.4 + (hash(i,7) - .5) * 2.4; o.y = 3.2 - fall * 4.2; o.z = (hash(i,8) - .5) * 1.2; o.rx = fall * 3; o.ry = fall * 2; o.s = .38; o.c = "blue"; }
+    else { o.x = (col - 3.5) * .62; o.y = -1.6 - row * .14; o.z = -row * .25; o.rx = -1.25; o.ry = 0; o.s = .45; o.c = "grey"; } },
+  journey(i, t, o){
+    const S = stageParam; const st = Math.floor(S), f = S - st;
+    const P = [[-3.3, 2.0, 0], [0, -.45, .4], [2.3, .3, .6], [0, -.45, .4]];
+    if(i === 0){
+      const a = P[Math.min(3, st)], b = P[Math.min(3, st + 1)];
+      const e = f < .5 ? 0 : smooth((f - .5) / .5);
+      o.x = a[0] + (b[0] - a[0]) * e; o.y = a[1] + (b[1] - a[1]) * e + Math.sin(e * Math.PI) * 1.4 + Math.sin(t * 2) * .06; o.z = a[2] + (b[2] - a[2]) * e + 1;
+      o.rx = -.15; o.ry = Math.sin(t * .8) * .25 + e * TAU * (st === 1 ? 1 : 0); o.rz = 0; o.s = 1.05;
+      const shown = f < .75 ? st : Math.min(3, st + 1);
+      o.c = ["grey", "green", "purple", "green"][shown]; return; }
+    if(i < 18){ const a = i * GA * 2 + t * .2, r = .5 + hash(i,1) * 1;
+      o.x = -3.3 + Math.cos(a) * r; o.y = 2.0 + Math.sin(a) * r * .55 + .2; o.z = -.6 + hash(i,2); o.rx = t * .3 + i; o.ry = i; o.s = .26; o.c = "grey"; return; }
+    if(i < 40){ const k = i - 18; o.x = -1.25 + (k % 11) * .25; o.y = -.6 + Math.floor(k / 11) * .02; o.z = -.5 + Math.floor(k / 11) * .35;
+      o.rx = -.05; o.ry = 0; o.rz = (hash(i,5) - .5) * .12; o.s = .72; o.c = "green"; return; }
+    const k = i - 40; o.x = 4.4 + (k % 3) * .4; o.y = -1.5 + Math.floor(k / 3) * .3; o.z = -.6; o.rx = -1.3; o.s = .4; o.c = "purple"; },
+  fan(i, t, o){
+    if(i === 0){ o.x = 0; o.y = .05 + Math.sin(t) * .06; o.z = 2.8; o.rx = Math.sin(t * .6) * .05 - .02; o.ry = Math.sin(t * .45) * .16; o.rz = 0; o.s = 2.25; o.c = "paper"; return; }
+    const k = i - 1, a = (k / (N - 2) - .5) * 2.6;
+    o.x = Math.sin(a) * 4.2; o.y = Math.cos(a) * 2 - 2.1 + Math.sin(t + k) * .05; o.z = -2.2 - Math.abs(a) * .6; o.rx = 0; o.ry = 0; o.rz = -a * .9; o.s = .62; o.c = k % 5 === 0 ? "blue" : "paper"; },
+  stack(i, t, o){
+    if(i === 0){ o.x = 0; o.y = 1.55 + Math.sin(t * 1.6) * .12; o.z = .6; o.rx = -.25; o.ry = Math.sin(t * .5) * .3; o.s = .95; o.c = "paper"; return; }
+    if(i < 28){ const k = i - 1; o.x = -1.3 + (k % 9) * .32; o.y = -.32 + Math.sin(k) * .03; o.z = -.55 + Math.floor(k / 9) * .45; o.rx = -.08; o.ry = 0; o.rz = (hash(i,5) - .5) * .1; o.s = .76; o.c = "green"; return; }
+    if(i < 36){ const k = i - 28, a = k / 8 * TAU + t * .25; o.x = 2.8 + Math.cos(a) * .8; o.y = .4 + Math.sin(a) * .9; o.z = -.5; o.rx = 0; o.ry = -.4; o.rz = a; o.s = .4; o.c = "purple"; return; }
+    const k = i - 36, a = k * 1.7 + t * .15; o.x = -3.0 + Math.cos(a) * 1.1; o.y = 1 + Math.sin(a * 1.3) * 1.1; o.z = -1; o.rx = t * .4 + k; o.ry = k; o.s = .34; o.c = "grey"; },
+  ring(i, t, o){ const a = i / N * TAU + t * .12, r = 3.1;
+    o.x = Math.cos(a) * r; o.y = Math.sin(a) * r * .95; o.z = Math.sin(a * 2 + t) * .4; o.rx = 0; o.ry = Math.sin(a + t) * .5; o.rz = a - Math.PI / 2; o.s = .58;
+    o.c = ["green","amber","red","purple","green","amber"][i % 6]; },
+  halo(i, t, o){ const a = i / N * TAU + t * .08; o.x = Math.cos(a) * 6.4; o.y = Math.sin(a) * 3.9; o.z = -1.5 + Math.sin(a * 3 + t) * .5; o.rx = 0; o.ry = Math.sin(a + t) * .6; o.rz = a; o.s = .55; o.c = ["green","amber","red","purple","blue","paper"][i % 6]; },
+  bars(i, t, o){
+    const C = counts, raw = [C.total, C.received, C.missing, C.borrowed, C.cancelled, Math.max(0, C.notIn || 0)];
+    const sum = raw.reduce((x, y) => x + y, 0) || 1; const per = raw.map(v => v ? Math.max(1, Math.floor(v * (N - 1) / sum)) : 0);
+    let acc = 0, col = 0, k = i; for(; col < 6; col++){ if(k < per[col]) break; k -= per[col]; }
+    const tones = ["blue","green","amber","purple","red","grey"];
+    if(col >= 6){ o.x = 0; o.y = -6; o.z = -4; o.s = .001; o.c = "paper"; return; }
+    o.x = (col - 2.5) * 1.1; o.y = -2.5 + k * .34 + Math.sin(t * 2 + i) * .015; o.z = 0; o.rx = -1.15; o.ry = .0; o.rz = Math.sin(i * 3.1) * .08; o.s = .58; o.c = tones[col]; },
+  helix(i, t, o){ const a = i * .52 + t * .25, y = 4.2 - i * .19;
+    o.x = Math.cos(a) * 2.1; o.z = Math.sin(a) * 2.1 - .5; o.y = y; o.rx = 0; o.ry = -a + Math.PI / 2; o.rz = 0; o.s = .55;
+    o.c = ["green","green","purple","amber","green","red","green","purple"][i % 8]; },
+  flow(i, t, o){ const u = ((i / N) + t * .06) % 1;
+    const ax = -3.4, bx = 3.4, ay = -.2; const x = ax + (bx - ax) * u, y = ay + Math.sin(u * Math.PI) * 2.9;
+    o.x = x; o.y = y; o.z = Math.sin(u * TAU * 2) * .4; o.rx = 0; o.ry = 0; o.rz = -Math.cos(u * Math.PI) * 1.1; o.s = .34 + Math.sin(u * Math.PI) * .18; o.c = u < .5 ? "purple" : "green"; },
+  vault(i, t, o){ const yv = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - yv * yv), th = GA * i + t * .18, R = 2.5;
+    o.x = Math.cos(th) * r * R; o.y = yv * R; o.z = Math.sin(th) * r * R; o.rx = Math.asin(yv) * -1; o.ry = -th + Math.PI / 2; o.rz = 0; o.s = .48; o.c = i % 4 === 0 ? "blue" : "paper"; },
+};
+const PROPS = {
+  swirl:{}, halo:{}, grid:{}, rain:{cloud:1}, journey:{box:1, personA:1, cloud:1}, fan:{}, stack:{box:1, beam:1}, ring:{}, bars:{}, helix:{}, flow:{personA:1, personB:1}, vault:{vault:1}
+};
+function smooth(x){ x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); }
+
+/* ---- scroll → scene blend ---- */
+const secs = [...document.querySelectorAll("main > section")];
+const mobile = () => innerWidth < 860;
+const SIDE = {left:3.4, right:-3.4, center:0};
+function sceneState(){
+  const probe = innerHeight * .5, zone = innerHeight * .45;
+  let i = 0; for(let k = 0; k < secs.length; k++){ if(secs[k].getBoundingClientRect().top <= probe) i = k; }
+  const r = secs[i].getBoundingClientRect();
+  const next = secs[Math.min(secs.length - 1, i + 1)];
+  const tt = smooth((probe - (r.bottom - zone)) / zone);
+  return {a:secs[i], b:next, t: next === secs[i] ? 0 : tt};
+}
+
+/* ---- events from the page ---- */
+let flashCol = new THREE.Color(), flashAmt = 0, celebrate = 0;
+window.addEventListener("pv:scan", e => {
+  const tone = e.detail.tone; flashCol.copy(TONE_COL[tone] || COL.blue); flashAmt = 1;
+  papers[0].kickV.y += 4.5; papers[0].spin += TAU;
+  for(let k = 1; k < N; k++){ if(hash(k, Date.now() % 97) < .25){ papers[k].kickV.set((hash(k,9) - .5) * 3, 2 + hash(k,10) * 3, (hash(k,11) - .5) * 3); } }
+});
+window.addEventListener("pv:counts", e => { counts = {...counts, ...e.detail}; });
+window.addEventListener("pv:celebrate", () => { celebrate = 1; flashCol.copy(COL.green); flashAmt = 1.4; });
+window.addEventListener("pv:mission", e => { if(e.detail.all){ celebrate = 1; } flashCol.copy(COL.green); flashAmt = 1.1; });
+
+/* ---- pointer ---- */
+const mouse = new THREE.Vector2(0, 0), mouseS = new THREE.Vector2(0, 0), ray = new THREE.Raycaster(), hit = new THREE.Vector3(), plane = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+addEventListener("pointermove", e => { mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); }, {passive:true});
+
+addEventListener("resize", () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+
+/* ---- loop ---- */
+const ta = tg(), tb = tg(), tmpC = new THREE.Color(), tmpC2 = new THREE.Color();
+let last = performance.now(), time = 0, worldX = 3.4, worldScale = 1, visible = true;
+document.addEventListener("visibilitychange", () => { visible = !document.hidden; if(visible){ last = performance.now(); requestAnimationFrame(frame); } });
+function frame(now){
+  if(!visible) return;
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  time += dt * (REDUCED ? .25 : 1) * (1 + celebrate * 4);
+  celebrate = Math.max(0, celebrate - dt * .5);
+  stageParam = window.__journeyStage ? window.__journeyStage() : 0;
+
+  const {a, b, t} = sceneState();
+  const fa = F[a.dataset.scene] || F.swirl, fb = F[b.dataset.scene] || F.swirl;
+  const sideT = mobile() ? 0 : (SIDE[a.dataset.side] ?? 0) * (1 - t) + (SIDE[b.dataset.side] ?? 0) * t;
+  const scaleT = mobile() ? .62 : 1;
+  const damp = 1 - Math.exp(-dt * (REDUCED ? 2 : 3.6));
+  worldX += (sideT - worldX) * damp; worldScale += (scaleT - worldScale) * damp;
+  world.position.x = worldX; world.scale.setScalar(worldScale);
+  world.position.y = mobile() ? .6 : 0;
+
+  // pointer ray in world space
+  mouseS.lerp(mouse, damp);
+  ray.setFromCamera(mouseS, camera); ray.ray.intersectPlane(plane, hit); const local = world.worldToLocal(hit.clone());
+  camera.position.x = mouseS.x * .6; camera.position.y = mouseS.y * .4; camera.lookAt(0, 0, 0);
+
+  for(let i = 0; i < N; i++){
+    const p = papers[i];
+    Object.assign(ta, tg()); Object.assign(tb, tg());
+    fa(i, time, ta); fb(i, time, tb);
+    const lx = ta.x + (tb.x - ta.x) * t, ly = ta.y + (tb.y - ta.y) * t, lz = ta.z + (tb.z - ta.z) * t;
+    // pointer repel
+    const dx = lx - local.x, dy = ly - local.y, d2 = dx * dx + dy * dy, push = Math.exp(-d2 * .9) * .7;
+    const ix = lx + dx * push, iy = ly + dy * push, iz = lz + push * .8;
+    const k = damp * (.7 + hash(i, 12) * .6);
+    p.pos.x += (ix - p.pos.x) * k; p.pos.y += (iy - p.pos.y) * k; p.pos.z += (iz - p.pos.z) * k;
+    p.rot.x += (ta.rx + (tb.rx - ta.rx) * t - p.rot.x) * k; p.rot.y += (ta.ry + (tb.ry - ta.ry) * t - p.rot.y) * k; p.rot.z += (ta.rz + (tb.rz - ta.rz) * t - p.rot.z) * k;
+    p.s += (ta.s + (tb.s - ta.s) * t - p.s) * k;
+    // spring kick
+    p.kickV.addScaledVector(p.kick, -38 * dt); p.kickV.multiplyScalar(Math.exp(-dt * 5)); p.kick.addScaledVector(p.kickV, dt);
+    p.spin *= Math.exp(-dt * 3);
+    p.mesh.position.set(p.pos.x + p.kick.x * .3, p.pos.y + p.kick.y * .3, p.pos.z + p.kick.z * .3);
+    p.mesh.rotation.set(p.rot.x + p.kick.y * .2, p.rot.y + p.spin, p.rot.z + p.kick.x * .2);
+    p.mesh.scale.setScalar(Math.max(.001, p.s));
+    tmpC.copy(COL[ta.c] || COL.paper); tmpC2.copy(COL[tb.c] || COL.paper); tmpC.lerp(tmpC2, t);
+    p.col.lerp(tmpC, damp * .8); p.mat.color.copy(p.col);
+  }
+  // props
+  const pa = PROPS[a.dataset.scene] || {}, pb = PROPS[b.dataset.scene] || {};
+  for(const kname in props){
+    const target = (pa[kname] || 0) * (1 - t) + (pb[kname] || 0) * t;
+    propVis[kname] += (target - propVis[kname]) * Math.min(1, damp * 2.2);
+    const o = props[kname]; o.visible = propVis[kname] > .01; o.scale.setScalar(Math.max(.001, propVis[kname]));
+  }
+  box.position.set(0, -1, 0); box.rotation.set(.12, Math.sin(time * .3) * .04, 0);
+  if(a.dataset.scene === "stack" || b.dataset.scene === "stack"){ box.position.set(0, -.9, 0); }
+  personA.position.set(3.4, -.9, .3); personA.rotation.y = Math.sin(time) * .2;
+  if((a.dataset.scene === "flow") || (b.dataset.scene === "flow")) personA.position.set(-3.6, -1.6, 0);
+  personB.position.set(3.6, -1.6, 0); personB.rotation.y = -Math.sin(time) * .2;
+  vault.rotation.set(time * .2, time * .3, 0);
+  cloud.position.set(-3.3, 2.0, -1.2); if(a.dataset.scene === "rain" || b.dataset.scene === "rain") cloud.position.set(-.4, 3.5, -1);
+  beam.position.set(0, 1.55 + Math.sin(time * 3) * .45, 1.1); beam.material.opacity = .5 + Math.sin(time * 12) * .3;
+  // flash light for scan feedback
+  flashAmt = Math.max(0, flashAmt - dt * 1.4);
+  flash.color.copy(flashCol); flash.intensity = flashAmt * 60; flash.position.set(worldX, .5, 3);
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+progress(100);
+requestAnimationFrame(t => { last = t; frame(t); window.__loadDone && window.__loadDone(); });
+</script>
+</body>
+</html>
