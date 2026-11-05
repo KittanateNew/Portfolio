@@ -1,7 +1,8 @@
 import type { ImageMetadata } from 'astro';
 
 /**
- * Keystatic stores image fields as "/src/assets/images/<area>/<file>".
+ * Keystatic stores image fields as "/src/assets/images/<area>/<entry slug>/<file>"
+ * (singletons have no slug folder). Keep that layout or the editor cannot find the file.
  * Globbing the folder lets Astro's <Image>/<Picture> optimise them at build time.
  */
 const files = import.meta.glob<{ default: ImageMetadata }>(
