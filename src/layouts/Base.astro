@@ -115,6 +115,14 @@ const ogImage = settings.ogImage ? new URL(settings.ogImage, Astro.site) : undef
     { capture: true }
   );
 
+  // Clicking a link while a smooth scroll is still gliding: Lenis ignores the router's
+  // jump to the top and keeps animating to its old target, so the new page opened
+  // part-way down (or at the bottom). Cancel the glide as soon as navigation starts,
+  // and again right before the swap in case the visitor kept scrolling while it loaded.
+  const haltSmoothScroll = () => getLenis()?.scrollTo(window.scrollY, { immediate: true, force: true });
+  document.addEventListener('astro:before-preparation', haltSmoothScroll);
+  document.addEventListener('astro:before-swap', haltSmoothScroll);
+
   onPageLoad(() => {
     initSmoothScroll();
     // The router has just restored or reset window scroll; sync Lenis to it. Resize first:
