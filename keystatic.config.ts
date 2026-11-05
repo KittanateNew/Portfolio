@@ -211,10 +211,19 @@ export default config({
         cover: fields.image({ label: 'Cover image', ...img('projects'), validation: { isRequired: true } }),
         gallery: fields.array(
           fields.object({
-            image: fields.image({ label: 'Image', ...img('projects'), validation: { isRequired: true } }),
-            alt: fields.text({ label: 'Alt text' }),
+            image: fields.image({
+              label: 'Screenshot',
+              description: 'Upload at full size; it is never stretched beyond its real size. 1600 px wide or more looks sharpest.',
+              ...img('projects'),
+              validation: { isRequired: true },
+            }),
+            alt: fields.text({ label: 'Caption', description: 'Short description, e.g. "Daily in/out dashboard". Also read aloud by screen readers.' }),
           }),
-          { label: 'Gallery', itemLabel: (g) => g.fields.alt.value || 'Image' }
+          {
+            label: 'Gallery (screenshots)',
+            description: 'Screens of the real thing. Two sit side by side; with an odd number the first one is shown wide. Visitors can click to view full screen.',
+            itemLabel: (g) => g.fields.alt.value || 'Screenshot',
+          }
         ),
         tech: fields.array(fields.text({ label: 'Tag' }), { label: 'Tech tags', itemLabel: (t) => t.value || 'Tag' }),
         liveUrl: fields.url({ label: 'Live URL' }),
@@ -262,6 +271,21 @@ export default config({
             }),
           }),
           { label: 'References & attachments', itemLabel: (l) => l.fields.label.value || 'Link' }
+        ),
+        credits: fields.array(
+          fields.object({
+            name: fields.text({ label: 'Name', validation: { length: { min: 1 } } }),
+            role: fields.text({ label: 'Role (optional)', description: 'e.g. "Model training", "Co-author", "Project advisor"' }),
+            url: fields.url({
+              label: 'Their website (optional)',
+              description: 'Personal portfolio, GitHub or LinkedIn. Visitors can click the name to open it.',
+            }),
+          }),
+          {
+            label: 'Team & credits',
+            description: 'For team projects: the people who worked on it with you. You can add yourself too, to show your role.',
+            itemLabel: (c) => c.fields.name.value || 'Person',
+          }
         ),
         featured: fields.checkbox({ label: 'Featured', defaultValue: false }),
         date: fields.date({ label: 'Date', validation: { isRequired: true } }),

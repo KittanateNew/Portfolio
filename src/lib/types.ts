@@ -28,6 +28,8 @@ export interface ProjectView {
   video: { kind: 'file' | 'youtube'; src: string; poster: string | null; caption: string } | null;
   /** References and attachments: papers, guides, docs. `external` links leave the site. */
   links: { label: string; kind: 'paper' | 'guide' | 'doc' | 'web' | 'video'; href: string; external: boolean }[];
+  /** Team members credited on the project. `href` is their own site, when given. */
+  credits: { name: string; role: string; href: string | null }[];
   featured: boolean;
   cover: ImageMetadata | undefined;
   gallery: { src: ImageMetadata | undefined; alt: string }[];

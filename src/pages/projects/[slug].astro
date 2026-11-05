@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import { Renderer } from '@astrojs/markdoc/components';
 import Base from '../../layouts/Base.astro';
 import { getProjects } from '../../lib/reader';
@@ -35,6 +35,16 @@ function where(href: string, external: boolean) {
   return ext === 'pdf' ? 'PDF' : ext === 'html' ? 'Opens in browser' : (ext?.toUpperCase() ?? 'File');
 }
 const hasLinks = project.liveUrl || project.repoUrl || project.links.length > 0;
+
+/** Gallery: full-size WebP for the viewer (sharp text, never upscaled). */
+const gallery = await Promise.all(
+  project.gallery.map(async (g, i) => ({
+    ...g,
+    full: (await getImage({ src: g.src!, width: g.src!.width, format: 'webp', quality: 92 })).src,
+    caption: g.alt || `${project.title}: screen ${i + 1}`,
+  }))
+);
+const pad2 = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Base title={project.title} description={project.summary}>
@@ -47,6 +57,16 @@ const hasLinks = project.liveUrl || project.repoUrl || project.links.length > 0;
         <dl class="project__facts eyebrow" data-fade>
           <div><dt>Date</dt><dd>{monthYear(project.date)}</dd></div>
           {project.tech.length > 0 && <div><dt>Built with</dt><dd>{project.tech.join(', ')}</dd></div>}
+          {project.credits.length > 0 && (
+            <div>
+              <dt>Team</dt>
+              <dd>
+                <a class="link-draw" href="#credits">
+                  {project.credits.length === 1 ? '1 person' : `${project.credits.length} people`} ↓
+                </a>
+              </dd>
+            </div>
+          )}
           {hasLinks && (
             <div>
               <dt>Links</dt>
@@ -134,14 +154,88 @@ const hasLinks = project.liveUrl || project.repoUrl || project.links.length > 0;
     }
 
     {
-      project.gallery.length > 0 && (
-        <ul class="project__gallery container-x">
-          {project.gallery.map((g) => (
-            <li data-fade>
-              <Picture src={g.src!} alt={g.alt} widths={[640, 1024, 1600]} sizes="(max-width: 767px) 100vw, 80vw" formats={['avif', 'webp']} loading="lazy" />
-            </li>
-          ))}
-        </ul>
+      project.credits.length > 0 && (
+        <section id="credits" class="refs container-x" aria-labelledby="credits-title">
+          <h2 id="credits-title" class="eyebrow refs__title">Credits</h2>
+          <ul class="refs__list">
+            {project.credits.map((c, i) => {
+              const inner = (
+                <>
+                  <span class="refs__num eyebrow">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="refs__label">{c.name}</span>
+                  <span class="refs__where eyebrow">{c.role}</span>
+                  <span class="refs__arrow" aria-hidden="true">{c.href ? '↗' : ''}</span>
+                </>
+              );
+              return (
+                <li data-fade>
+                  {c.href ? (
+                    <a class="refs__item credits__item" href={c.href} target="_blank" rel="noopener" data-cursor="Visit">
+                      {inner}
+                    </a>
+                  ) : (
+                    <div class="refs__item credits__item">{inner}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      gallery.length > 0 && (
+        <section class="shots container-x" aria-labelledby="shots-title" data-count={gallery.length}>
+          <div class="shots__head">
+            <h2 id="shots-title" class="eyebrow">Screens</h2>
+            <p class="eyebrow shots__count">{pad2(gallery.length)} {gallery.length === 1 ? 'screenshot' : 'screenshots'} · click to enlarge</p>
+          </div>
+          <ul class="shots__grid">
+            {gallery.map((g, i) => (
+              <li class="shots__item" data-fade style={`--w:${g.src!.width}px`}>
+                <a class="shots__frame" href={g.full} data-shot={i} data-cursor="View" aria-label={`View full size: ${g.caption}`}>
+                  <span class="shots__bar" aria-hidden="true">
+                    <i /><i /><i />
+                    <span class="shots__bar-title">{g.alt}</span>
+                  </span>
+                  <Picture
+                    src={g.src!}
+                    alt={g.alt}
+                    widths={[480, 800, 1200, 1600, 2400].filter((w) => w < g.src!.width).concat(g.src!.width)}
+                    sizes={gallery.length === 1 || (gallery.length % 2 === 1 && i === 0) ? '(max-width: 767px) 100vw, 90vw' : '(max-width: 767px) 100vw, 46vw'}
+                    formats={['webp']}
+                    quality={90}
+                    loading="lazy"
+                  />
+                </a>
+                {g.alt && <p class="shots__caption">{g.alt}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      gallery.length > 0 && (
+        <dialog class="viewer" aria-label="Screenshot viewer">
+          <div class="viewer__top">
+            <p class="eyebrow viewer__count"><span data-viewer-index>01</span> / {pad2(gallery.length)}</p>
+            <button type="button" class="viewer__btn viewer__close" data-viewer-close aria-label="Close">Close ✕</button>
+          </div>
+          <figure class="viewer__stage">
+            <img data-viewer-img alt="" decoding="async" />
+            <figcaption class="viewer__caption" data-viewer-caption />
+          </figure>
+          {gallery.length > 1 && (
+            <>
+              <button type="button" class="viewer__btn viewer__nav viewer__prev" data-viewer-step="-1" aria-label="Previous screenshot">←</button>
+              <button type="button" class="viewer__btn viewer__nav viewer__next" data-viewer-step="1" aria-label="Next screenshot">→</button>
+            </>
+          )}
+          <script type="application/json" data-viewer-data set:html={JSON.stringify(gallery.map((g) => ({ src: g.full, alt: g.alt, caption: g.alt, w: g.src!.width, h: g.src!.height })))} />
+        </dialog>
       )
     }
 
@@ -157,14 +251,83 @@ const hasLinks = project.liveUrl || project.repoUrl || project.links.length > 0;
 </Base>
 
 <script>
-  import { onPageLoad, revealText, fadeUp } from '../../lib/motion';
+  import { onPageLoad, revealText, fadeUp, setScrollLocked } from '../../lib/motion';
 
   onPageLoad(() => {
     const page = document.querySelector<HTMLElement>('.project');
     if (!page) return;
     revealText(page.querySelector('.project__title')!, { by: 'chars', scroll: false });
     page.querySelectorAll<HTMLElement>('[data-fade]').forEach((el) => fadeUp(el));
+    return setupViewer(page);
   });
+
+  /** Full-screen screenshot viewer. Without JS the thumbnails still link to the full image. */
+  function setupViewer(page: HTMLElement) {
+    const dialog = page.querySelector<HTMLDialogElement>('.viewer');
+    const data = dialog?.querySelector('[data-viewer-data]')?.textContent;
+    if (!dialog || !data) return;
+    const shots: { src: string; alt: string; caption: string; w: number; h: number }[] = JSON.parse(data);
+    const img = dialog.querySelector<HTMLImageElement>('[data-viewer-img]')!;
+    const caption = dialog.querySelector<HTMLElement>('[data-viewer-caption]')!;
+    const counter = dialog.querySelector<HTMLElement>('[data-viewer-index]')!;
+    let index = 0;
+    let opener: HTMLElement | null = null;
+
+    const show = (i: number) => {
+      index = (i + shots.length) % shots.length;
+      const s = shots[index];
+      img.src = s.src;
+      img.alt = s.alt;
+      img.width = s.w;
+      img.height = s.h;
+      caption.textContent = s.caption;
+      caption.hidden = !s.caption;
+      counter.textContent = String(index + 1).padStart(2, '0');
+      // Warm the neighbours so arrowing through is instant.
+      [index - 1, index + 1].forEach((n) => (new Image().src = shots[(n + shots.length) % shots.length].src));
+    };
+    const open = (i: number, from: HTMLElement) => {
+      opener = from;
+      show(i);
+      dialog.showModal();
+      setScrollLocked(true);
+    };
+    const close = () => dialog.open && dialog.close();
+
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as Element).closest<HTMLAnchorElement>('[data-shot]');
+      if (!link || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      open(Number(link.dataset.shot), link);
+    };
+    const onDialogClick = (e: MouseEvent) => {
+      const t = e.target as Element;
+      const step = t.closest<HTMLElement>('[data-viewer-step]');
+      if (step) return show(index + Number(step.dataset.viewerStep));
+      // A click on the dark backdrop (not the image or a control) closes it.
+      if (t.closest('[data-viewer-close]') || !t.closest('img, button, figcaption')) close();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') show(index + 1);
+      else if (e.key === 'ArrowLeft') show(index - 1);
+    };
+    const onClose = () => {
+      setScrollLocked(false);
+      opener?.focus({ preventScroll: true });
+    };
+
+    page.addEventListener('click', onClick);
+    dialog.addEventListener('click', onDialogClick);
+    dialog.addEventListener('keydown', onKey);
+    dialog.addEventListener('close', onClose);
+    return () => {
+      close();
+      page.removeEventListener('click', onClick);
+      dialog.removeEventListener('click', onDialogClick);
+      dialog.removeEventListener('keydown', onKey);
+      dialog.removeEventListener('close', onClose);
+    };
+  }
 </script>
 
 <style>
@@ -346,6 +509,14 @@ const hasLinks = project.liveUrl || project.repoUrl || project.links.length > 0;
     font-size: var(--text-lg);
     transition: transform var(--dur-base) var(--ease-out-expo), color var(--dur-fast);
   }
+  /* Credits: number, name, role, arrow (no "kind" column). */
+  .credits__item {
+    grid-template-columns: 2.25rem 1fr auto 1.5rem;
+  }
+  div.refs__item:hover {
+    padding-inline: 0;
+    background: none;
+  }
   .refs__item:hover,
   .refs__item:focus-visible {
     padding-inline: 0.75rem;
@@ -373,6 +544,9 @@ const hasLinks = project.liveUrl || project.repoUrl || project.links.length > 0;
     .refs__where {
       grid-column: 1;
     }
+    .credits__item {
+      grid-template-columns: 1fr 1.5rem;
+    }
     .refs__arrow {
       grid-row: 1 / span 3;
       grid-column: 2;
@@ -380,14 +554,199 @@ const hasLinks = project.liveUrl || project.repoUrl || project.links.length > 0;
     }
   }
 
-  .project__gallery {
-    display: grid;
-    gap: var(--spacing-gutter);
+  /* ---- Screens (gallery) ---------------------------------------------- */
+  .shots {
     padding-top: var(--spacing-section);
   }
-  .project__gallery :global(img) {
+  .shots__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-muted);
+  }
+  .shots__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: calc(var(--spacing-gutter) * 1.25) var(--spacing-gutter);
+    align-items: start;
+  }
+  /* One screenshot, or the first of an odd number, gets the full width. */
+  .shots[data-count='1'] .shots__item,
+  .shots:is([data-count='3'], [data-count='5'], [data-count='7'], [data-count='9']) .shots__item:first-child {
+    grid-column: 1 / -1;
+  }
+  .shots__item {
+    /* Never wider than the real screenshot, so it is never stretched blurry. */
+    width: min(100%, var(--w));
+    justify-self: center;
+  }
+  .shots__frame {
+    display: block;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    border-radius: 0.7rem;
+    background: var(--color-paper-deep);
+    box-shadow: 0 30px 70px -45px rgb(20 19 17 / 0.55);
+    transition:
+      transform var(--dur-base) var(--ease-out-expo),
+      box-shadow var(--dur-base) var(--ease-out-expo);
+  }
+  .shots__frame:hover,
+  .shots__frame:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 0 40px 80px -40px rgb(20 19 17 / 0.6);
+  }
+  .shots__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2rem;
+    padding-inline: 0.85rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+  .shots__bar i {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-ink) 22%, transparent);
+  }
+  .shots__bar i:first-child {
+    background: var(--color-accent);
+  }
+  .shots__bar-title {
+    overflow: hidden;
+    margin-left: 0.6rem;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .shots__frame :global(img) {
+    display: block;
     width: 100%;
-    border-radius: 0.6rem;
+    height: auto;
+  }
+  .shots__caption {
+    margin-top: 0.75rem;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+  @media (max-width: 767px) {
+    .shots__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---- Full-screen viewer --------------------------------------------- */
+  .viewer {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-paper);
+  }
+  .viewer[open] {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    animation: viewer-in var(--dur-base) var(--ease-out-expo);
+  }
+  .viewer::backdrop {
+    background: rgb(14 13 12 / 0.94);
+  }
+  @keyframes viewer-in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+  .viewer__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem var(--spacing-gutter);
+  }
+  .viewer__count {
+    color: var(--color-muted-on-ink);
+  }
+  .viewer__stage {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.9rem;
+    min-height: 0;
+    padding: 0 calc(var(--spacing-gutter) + 3.5rem) 1.5rem;
+  }
+  .viewer__stage img {
+    /* Fit the screen, but never enlarge past the real pixels. */
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 9rem);
+    border-radius: 0.5rem;
+    box-shadow: 0 40px 120px -30px rgb(0 0 0 / 0.8);
+  }
+  .viewer__caption {
+    color: var(--color-muted-on-ink);
+    font-size: var(--text-sm);
+    text-align: center;
+  }
+  .viewer__btn {
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: var(--radius-pill);
+    background: rgb(255 255 255 / 0.06);
+    color: inherit;
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-soft),
+      border-color var(--dur-fast) var(--ease-soft);
+  }
+  .viewer__btn:hover,
+  .viewer__btn:focus-visible {
+    border-color: var(--color-accent);
+    background: rgb(255 255 255 / 0.12);
+  }
+  .viewer__close {
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .viewer__nav {
+    position: fixed;
+    top: 50%;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.2rem;
+    transform: translateY(-50%);
+  }
+  .viewer__prev {
+    left: var(--spacing-gutter);
+  }
+  .viewer__next {
+    right: var(--spacing-gutter);
+  }
+  @media (max-width: 640px) {
+    .viewer__stage {
+      padding-inline: var(--spacing-gutter);
+    }
+    .viewer__nav {
+      top: auto;
+      bottom: 1rem;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .viewer[open] {
+      animation: none;
+    }
   }
 
   .project__next {

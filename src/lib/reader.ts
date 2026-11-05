@@ -26,6 +26,18 @@ function toVideo(v: { file: string | null; url: string; poster: string | null; c
   };
 }
 
+/** Only http(s) links leave the site; anything else (javascript:, typos) is dropped. */
+function safeHref(url: string | null): string | null {
+  const v = url?.trim();
+  if (!v) return null;
+  try {
+    const u = new URL(/^[a-z][\w+.-]*:/i.test(v) ? v : `https://${v}`);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Markdoc AST as a string for @astrojs/markdoc's <Renderer />. */
 async function astString(field: () => Promise<{ node: unknown }>) {
   const { node } = await field();
@@ -107,6 +119,9 @@ export async function getProjects(): Promise<ProjectView[]> {
           .map((l) => ({ label: l.label, kind: l.kind, href: (l.file || l.url).trim() }))
           .filter((l) => l.href)
           .map((l) => ({ ...l, external: /^https?:\/\//.test(l.href) })),
+        credits: entry.credits
+          .filter((c) => c.name.trim())
+          .map((c) => ({ name: c.name.trim(), role: c.role.trim(), href: safeHref(c.url) })),
         featured: entry.featured,
         cover: resolveImage(entry.cover),
         gallery: entry.gallery
